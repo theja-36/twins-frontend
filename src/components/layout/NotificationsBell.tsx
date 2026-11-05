@@ -18,7 +18,7 @@ export function NotificationsBell() {
     const close = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
     document.addEventListener("mousedown", close); return () => document.removeEventListener("mousedown", close);
   }, []);
-  const items = loaded?.data ?? [];
+  const items = loaded?.data.items ?? [];
   const hot = items.filter((n) => n.severity !== "info" && Date.now() - Date.parse(n.at) < 86_400_000).length;
   return (
     <div ref={ref} className="relative">

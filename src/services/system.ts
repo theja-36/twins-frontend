@@ -18,7 +18,7 @@ const MOCK_NOTIFICATIONS = (): AppNotification[] => [
   { id: "n5", at: iso(600), kind: "circuit_breaker", severity: "critical", title: "DAILY breaker: breach", detail: "DAILY_LIMIT" },
 ];
 const MOCK_CONFIG = (): SystemConfig => ({
-  source: "sample data", environment: { appEnv: "staging", tradingMode: "paper", liveTradingGuardPasses: true, liveTradingEnabled: false, brokerOrders: false }, runtimeControls: { TRADING_ENABLED: false, INTAKE_ENABLED: true, KILL_SWITCH_ACTIVE: false },
+  source: "sample data", environment: { appEnv: "staging", tradingMode: "paper", liveTradingGuardPasses: true, liveTradingEnabled: false, brokerOrders: false }, runtimeControls: { tradingEnabled: false, intakeEnabled: true, killSwitchActive: false, versions: { TRADING_ENABLED: 1, INTAKE_ENABLED: 1, KILL_SWITCH_ACTIVE: 1 } },
   agentEngine: { valid: true, enabled: false, shadow: true, requiredAgents: AGENT_NAMES.map(([id]) => id), disabledAgents: [], haltOn: ["RESEARCH_BLOCKED", "RESEARCH_INCOMPLETE", "RESEARCH_ADVERSE"], maxConcurrency: 4, thresholds: { supportiveMin: 0.35, neutralMin: -0.15, cautionMin: -0.5, adverseVetoWeight: 50 }, weights: {} },
   paperTrading: { armedByHost: false, switch: { enabled: false, version: 1, reason: "seeded OFF by migration 0031", changedBy: "service:migration", changedAt: iso(1000) }, effective: false, config: { slippageBps: 5, entryExpiryMinutes: 30, trail: { kind: "percent", value: 0.5 }, trailAfterTargets: 1, breakevenAfterTarget1: true, exitFractions: [0.5, 0.25, 0.25], squareOffIstMinutes: 920, maxPriceAgeSeconds: 120 } },
   risk: { sizing: { valid: true, maxRiskPct: 1 }, portfolio: { valid: true, maxOpenPositions: 5 }, circuitBreakers: { valid: true, dailyLossPct: 2, weeklyLossPct: 5, warnPct: 75 }, expiry: { valid: true, pendingMinutes: 30, approvedForReviewMinutes: 15 } },
@@ -26,5 +26,9 @@ const MOCK_CONFIG = (): SystemConfig => ({
 
 export const getHealth = () => load<HealthStatus>("health/status", MOCK_HEALTH);
 export const getAgentsStatus = () => load<AgentsStatus>("agents/status?limit=50", MOCK_AGENTS);
-export const getNotifications = (limit = 100) => load<AppNotification[]>(`notifications?limit=${limit}`, MOCK_NOTIFICATIONS, (r) => r.notifications);
+export interface NotificationFeed { items: AppNotification[]; unavailableSources: string[] }
+export const getNotifications = (limit = 100) => load<NotificationFeed>(`notifications?limit=${limit}`, () => ({ items: MOCK_NOTIFICATIONS(), unavailableSources: [] }), (r) => ({ items: r.notifications ?? [], unavailableSources: Array.isArray(r.unavailableSources) ? r.unavailableSources : [] }));
 export const getSystemConfig = () => load<SystemConfig>("system/config", MOCK_CONFIG);
+
+/** Reads a control as true / false / undefined (undefined = the backend did not say). Never defaults to a "safe-looking" answer. */
+export const controlOf = (rc: { tradingEnabled?: boolean; intakeEnabled?: boolean; killSwitchActive?: boolean } | null | undefined, key: "tradingEnabled" | "intakeEnabled" | "killSwitchActive"): boolean | undefined => (typeof rc?.[key] === "boolean" ? rc[key] : undefined);

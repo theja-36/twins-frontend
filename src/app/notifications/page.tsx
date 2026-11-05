@@ -15,13 +15,15 @@ export default function NotificationsPage() {
   const { loaded, loading, refresh } = useLoaded(() => getNotifications(200), 20_000);
   const [sev, setSev] = useState<(typeof SEV)[number][0]>("all");
   const [kind, setKind] = useState("all");
-  const all = loaded?.data ?? [];
+  const all = loaded?.data.items ?? [];
+  const missing = loaded?.data.unavailableSources ?? [];
   const kinds = useMemo(() => ["all", ...Array.from(new Set(all.map((n) => n.kind)))], [all]);
   const rows = all.filter((n) => (sev === "all" || n.severity === sev) && (kind === "all" || n.kind === kind));
   return (
     <div className="space-y-6">
       <PageHeader title="Notifications" subtitle="Notable things the system recorded: safety switches, breakers, approvals, simulated trades and paper-switch changes." right={<SourceBadge source={loaded?.source} note={loaded?.note} loading={loading} />} />
       <DataBanner source={loaded?.source} note={loaded?.note} onRetry={refresh} />
+      {missing.length > 0 && <div role="status" className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2.5 text-xs text-amber-900"><b>Partly unavailable.</b> The backend could not read: {missing.map((m) => KIND[m] ?? m).join(", ")}. The rest is shown.</div>}
       <p className="text-xs text-slate-500">This is the system&apos;s own audit trail. Telegram alert deliveries are not stored in the database, so they are not listed here.</p>
       <div className="flex flex-wrap gap-2">
         {SEV.map(([k, l]) => <button key={k} onClick={() => setSev(k)} className={cn("rounded-full border px-3.5 py-1.5 text-xs font-medium transition", sev === k ? "border-royal-600 bg-royal-600 text-white" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300")}>{l}</button>)}

@@ -3,7 +3,7 @@ import React from "react";
 import { useLoaded } from "./hooks";
 import { DataBanner, Dot, KV, Section, SourceBadge, Skeleton } from "./ui";
 import { ago } from "@/services/trading";
-import { getSystemConfig } from "@/services/system";
+import { controlOf, getSystemConfig } from "@/services/system";
 
 const hhmm = (m: number | null): string => (m === null ? "never" : `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")} IST`);
 const pretty = (k: string): string => k.replace(/([A-Z])/g, " $1").replace(/_/g, " ").toLowerCase();
@@ -15,7 +15,8 @@ export function ConfigView() {
   const { loaded, loading, refresh } = useLoaded(getSystemConfig, 60_000);
   const c = loaded?.data;
   if (!c) return <Skeleton h={320} />;
-  const p = c.paperTrading, e = c.agentEngine, rc = c.runtimeControls;
+  const p = c.paperTrading, e = c.agentEngine;
+  const kill = controlOf(c.runtimeControls, "killSwitchActive"), intake = controlOf(c.runtimeControls, "intakeEnabled"), trading = controlOf(c.runtimeControls, "tradingEnabled");
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-500">Read-only. Settings are changed on the server; this page only shows them. Source: {c.source}.</p><SourceBadge source={loaded?.source} note={loaded?.note} loading={loading} /></div>
@@ -24,7 +25,7 @@ export function ConfigView() {
       <Section title="Safety posture" hint="The switches that decide whether anything real can happen.">
         <KV rows={[
           ["Environment", `${c.environment.appEnv ?? "—"} · mode ${c.environment.tradingMode ?? "—"}`], ["Live trading", <span key="l" className="inline-flex items-center gap-2"><Dot tone="ok" />Locked (cannot be enabled)</span>], ["Broker orders", <span key="b" className="inline-flex items-center gap-2"><Dot tone="ok" />None exist</span>],
-          ["Live-trading guard", yn(c.environment.liveTradingGuardPasses, "Passing", "FAILING")], ["Kill switch", rc ? yn(!rc.KILL_SWITCH_ACTIVE, "Clear", "ACTIVE") : "unreadable"], ["Intake", rc ? yn(rc.INTAKE_ENABLED, "On", "Off") : "unreadable"], ["Trading control", rc ? yn(rc.TRADING_ENABLED, "On", "Off") : "unreadable"],
+          ["Live-trading guard", yn(c.environment.liveTradingGuardPasses, "Passing", "FAILING")], ["Kill switch", kill === undefined ? <span key="k" className="inline-flex items-center gap-2"><Dot tone="warn" />unreadable</span> : yn(!kill, "Clear", "ACTIVE")], ["Intake", intake === undefined ? "unreadable" : yn(intake, "On", "Off")], ["Trading control", trading === undefined ? "unreadable" : yn(trading, "On", "Off")],
         ]} />
       </Section>
 
