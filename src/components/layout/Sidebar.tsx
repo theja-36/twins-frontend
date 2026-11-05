@@ -14,6 +14,10 @@ import {
   Lock,
   Radio,
   Sparkles,
+  Radar,
+  ClipboardCheck,
+  Briefcase,
+  LineChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,60 +41,33 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Workspace",
+    label: "Trading",
     items: [
-      {
-        name: "Overview",
-        href: "/",
-        icon: LayoutDashboard,
-      },
-      {
-        name: "Telegram Intake",
-        href: "/intake",
-        icon: Send,
-        badge: "8 Channels",
-        badgeStyle: "neutral",
-      },
-      {
-        name: "Market Feed",
-        href: "/market",
-        icon: TrendingUp,
-        badge: "Kite Mock",
-        badgeStyle: "neutral",
-      },
+      { name: "Overview", href: "/", icon: LayoutDashboard },
+      { name: "Signals", href: "/signals", icon: Radar },
+      { name: "Approvals", href: "/approvals", icon: ClipboardCheck, badge: "Human", badgeStyle: "acid" },
+      { name: "Positions", href: "/positions", icon: Briefcase, badge: "Paper", badgeStyle: "royal" },
+      { name: "P&L", href: "/pnl", icon: LineChart },
+    ],
+  },
+  {
+    label: "Data",
+    items: [
+      { name: "Telegram Intake", href: "/intake", icon: Send, badge: "Demo", badgeStyle: "neutral" },
+      { name: "Market Feed", href: "/market", icon: TrendingUp, badge: "Demo", badgeStyle: "neutral" },
     ],
   },
   {
     label: "Governance",
     items: [
-      {
-        name: "Decisions",
-        href: "/decisions",
-        icon: Layers,
-        badge: "3 Pending",
-        badgeStyle: "acid",
-      },
-      {
-        name: "Snapshots",
-        href: "/snapshots",
-        icon: HardDrive,
-      },
-      {
-        name: "Activity & Audit",
-        href: "/activity",
-        icon: ShieldCheck,
-      },
+      { name: "Decision Lab", href: "/decisions", icon: Layers, badge: "Demo", badgeStyle: "neutral" },
+      { name: "Snapshots", href: "/snapshots", icon: HardDrive },
+      { name: "Activity & Audit", href: "/activity", icon: ShieldCheck },
     ],
   },
   {
     label: "System",
-    items: [
-      {
-        name: "Settings",
-        href: "/settings",
-        icon: Settings,
-      },
-    ],
+    items: [{ name: "Settings", href: "/settings", icon: Settings }],
   },
 ];
 
