@@ -2,41 +2,11 @@
 
 Frontend user interface for **Twins**, a personal trading intelligence system built with Next.js, React, Tailwind CSS, and Lucide icons.
 
-## Architecture & Guarantees
-- **Audit/Security-First**: Enforces a strict read-only lock. Live broker execution routing is isolated.
-- **Deep Obsidian & Slate Dark Terminal**: High-contrast, low-latency financial terminal aesthetic with glowing telemetry badges and responsive mobile layout.
-- **Extensible API Layer**: Pre-built mock & telemetry adapter (`src/services/api.ts`). Switching to live backend endpoints requires setting one environment variable: `NEXT_PUBLIC_TWINS_API_URL`.
-
----
-
-## Implemented Views
-
-### 1. Dashboard (`/`)
-- **System Telemetry & Health**: Status of Telegram ingestion pipeline, Zerodha Kite WebSocket stream, agent engine, isolated execution gateway, and SHA-256 Merkle audit verifier.
-- **Real-Time KPIs**: Telegram messages 24h, Kite ticks/sec (1,840 peak, 18ms latency), pending human approvals, cryptographic integrity score (100%).
-- **Snapshot Storage & Verification**: Manifest of cold storage snapshots (`.json.gz`), SHA-256 copy-to-clipboard, one-click interactive cryptographic verification.
-- **Subsystem Diagnostics Matrix**: Live latency, backlog queue, protocol versions, and channel metrics.
-
-### 2. Decisions & Approvals (`/decisions`)
-- **Decision Cards**: Action badges (BUY/SELL/EXIT), Ticker & Exchange, AI Confidence %, Proposed Qty, Est. Price, Stop-Loss, Target, Risk Score (LOW/MEDIUM/HIGH/CRITICAL), Risk flags, and SHA-256 audit hash.
-- **Telegram Signal Citation**: Shows the exact monitored channel, timestamp, and message snippet that triggered the agent's evaluation.
-- **Safe Sign-off Workflow**: Simulated approval and rejection modal capturing human audit notes and writing to the cryptographic audit trail without triggering broker orders.
-- **Agent Execution Trace**: Table of recent agent runs (Sentinel Alpha, Hedge Sentinel, Exhaustion Detector), trigger types, token scans, decisions emitted, and reasoning logs.
-
-### 3. Market Data (`/market`)
-- **Zerodha Kite Live Feed**: Subscribed instruments (RELIANCE, HDFCBANK, TCS, INFY, ICICIBANK, NIFTY 50).
-- **Live Ticks**: Real-time tick simulator with subtle green/red price flash animations, LTP, point change, % change, volume, and turnover.
-- **Level 2 Market Depth**: 5-level Bid and Ask order book with prices, order counts, and cumulative volumes.
-- **Candle Telemetry**: 15-minute OHLC bars with volume and trend classification.
-
-### 4. Settings & Configuration (`/settings`)
-- **Safe Read-Only Audit**: Clear inspection of operational parameters without write risk.
-- **Pipeline Governance**: Monitored Telegram channels, keyword filters, rate limits, and minimum confidence cutoffs.
-- **Kite Stream Configuration**: Masked API keys, session tokens, daily expiry reminders, and feed modes.
-- **Risk Governance Rules**: Max single position, max portfolio exposure, mandatory stop-loss limits, and circuit breakers.
-- **Backend API Adapter**: Instructions on connecting real backend endpoints.
-
----
+## Architecture & guarantees
+- **Read-only.** Only GET is proxied; there is no approve, reject, order or switch action in this UI. Approving a trade is done in Telegram.
+- **Real data only.** There is no sample data anywhere. If the backend is missing or unreachable, one banner says so (with the reason and a Retry button) and pages show nothing instead of invented numbers; anything still on screen from before is marked as possibly stale.
+- **The API token never reaches the browser.** A server-side proxy holds it.
+- Paper data is labelled paper; live trading is locked at the backend.
 
 ## Getting Started
 
@@ -52,35 +22,32 @@ npm run build
 npm run start
 ```
 
-### Connecting to the live backend (read-only)
-The browser never talks to the backend directly. A server-side proxy (`src/app/api/twins/[...path]/route.ts`) forwards **GET requests on an allow-list** (`health`, `risk/decisions`, `risk/approvals`, `paper/*`) and keeps the API token on the server.
-```env
-# .env.local
-NEXT_PUBLIC_TWINS_LIVE=1
-TWINS_API_URL=http://127.0.0.1:4000      # server-only
-TWINS_API_KEY=...                         # server-only, never NEXT_PUBLIC_
+### Running it locally against staging (read-only)
+```bash
+ssh -L 4400:127.0.0.1:4110 hostinger-vps        # leave this running in one terminal
+# in the frontend folder; the token is entered without echo and kept only in this shell:
+read -rs TWINS_API_KEY && export TWINS_API_KEY TWINS_API_URL=http://127.0.0.1:4400
+npm run dev                                       # http://localhost:3000
 ```
-If the backend is not configured or unreachable the pages fall back to clearly labelled mock data. Staging's API listens on the VPS loopback only: use an SSH tunnel (`ssh -L 4000:127.0.0.1:4000 hostinger-vps`).
 
-**Safety:** there is no write path. Only GET is proxied; approving or rejecting a trade is done in Telegram (or the operator command), not from this UI; every page labels paper data as paper.
-
-## Views (wired to the backend, labelled mock fallback)
-The server tells the browser whether it is wired to a backend (`/api/twins/mode`). If so every page reads live data through the proxy; if the backend is missing or unreachable a page shows clearly labelled sample data **and says why**, with a Retry button.
-
+## Views
 | Route | Shows | Backend (GET only) |
 |---|---|---|
-| `/` Overview | safety posture, what is waiting for you, signals today, intake, system health, paper strip, latest signals and activity | `/system/config`, `/health/status`, `/risk/decisions`, `/risk/approvals`, `/paper/*`, `/notifications` |
-| `/signals` | every parsed signal after the safety gates (levels ladder, size, risk:reward, confidence, trust tier) | `/risk/decisions` |
-| `/approvals` | approval cards waiting for a human, approved cards, recent decisions (read-only: approve in Telegram) | `/risk/decisions?status=APPROVED_FOR_REVIEW`, `/risk/approvals` |
+| `/` Overview | safety posture, what is waiting for you, signals today, intake, system health, paper strip (with the enable-readiness chip), latest signals and activity | `/system/config`, `/health/status`, `/risk/decisions`, `/risk/approvals`, `/paper/*`, `/notifications` |
+| `/signals` | every parsed signal after the safety gates | `/risk/decisions` |
+| `/approvals` | approval cards waiting for a human (read-only: approve in Telegram) | `/risk/decisions`, `/risk/approvals` |
 | `/positions` | simulated positions with stop/entry/target ladder, live P&L and R | `/paper/positions` |
-| `/pnl` | P&L, win rate, expectancy, profit factor, drawdown, equity curve, breakdowns, small-sample warning | `/paper/summary`, `/paper/outcomes`, `/paper/outcomes/stats` |
-| `/history` | merged newest-first log of signals, approvals and closed trades, with filter, search and paging | `/risk/decisions`, `/risk/approvals`, `/paper/outcomes` |
-| `/agents` | the twelve research agents (weights, required, can-block, time limit, dependencies), engine mode, recent recorded runs | `/agents/status` |
-| `/notifications` (+ header bell) | audited system events (safety switches, breakers, approvals, paper trades, paper-switch changes, dead letters) with severity and kind filters | `/notifications` |
-| `/settings` | full read-only configuration: safety posture, paper trading (both keys), agent engine, sizing, portfolio, circuit breakers, expiry | `/system/config` |
+| `/pnl` | P&L, win rate, expectancy, profit factor, drawdown, equity curve, small-sample warning | `/paper/summary`, `/paper/outcomes`, `/paper/outcomes/stats` |
+| `/history` | merged log of signals, approvals and closed trades | `/risk/decisions`, `/risk/approvals`, `/paper/outcomes` |
+| `/intake` | Telegram intake counts, in-flight and dead-lettered items, recent messages (no text) | `/intake/status` |
+| `/market` | index prices, the Kite snapshot generation (per-file age), the provider data files | `/market/snapshot` |
+| `/agents` | the twelve research agents, engine mode, recent recorded runs | `/agents/status` |
+| `/notifications` (+ bell) | audited system events | `/notifications` |
+| `/settings` | the paper-trading enable checklist, safety posture, paper config, agent engine, risk limits | `/paper/readiness`, `/system/config` |
 
-Dark mode: the moon/sun button in the header (saved in the browser; follows the system setting until you choose; `?theme=dark` forces it for a link).
+Removed because they only showed invented data: Decision Lab, Activity & Audit, Snapshots (their routes redirect to Approvals, Notifications and Market data).
 
-Screenshots (`docs/screenshots/`): `light-*` desktop, `dark-*` desktop dark, `mobile-*` phone-width layout. They were taken against a local API with the project's synthetic test data (hence the odd symbols), i.e. real integration, not mock data.
+Dark mode: the moon/sun button in the header (saved in the browser; `?theme=dark` forces it for a link).
 
-The older demo pages (Telegram Intake, Market Feed, Decision Lab, Snapshots, Activity) are unchanged, labelled "Demo" in the menu, and still run on sample data. The old demo settings and overview content was replaced by the real views above.
+## Screenshots (`docs/screenshots/`)
+All of them were taken against a local API with the project's synthetic test data and a synthetic snapshot: light, dark, phone width, and the **no-backend** state. Screenshots of the real staging data are deliberately NOT stored in this repository (it is public for the moment); the end-to-end run against staging was checked by hand.

@@ -20,9 +20,7 @@ export default function OverviewPage() {
   const waiting = decisions.filter((d) => d.effectiveStatus === "APPROVED_FOR_REVIEW" && !approvedIds.has(d.id));
   const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
   const today = decisions.filter((d) => Date.parse(d.createdAt) >= midnight.getTime());
-  const sources = [cfg.loaded, health.loaded, dec.loaded].filter(Boolean) as NonNullable<typeof cfg.loaded>[];
-  const worst = sources.find((s) => s.source === "mock-fallback") ?? sources.find((s) => s.source === "mock") ?? sources[0];
-  const source = sources.length && sources.every((s) => s.source === "live") ? "live" : worst?.source;
+  const source = cfg.loaded || health.loaded || dec.loaded ? "live" : undefined, worst = undefined as { note?: string } | undefined;
   const allOk = h && h.database?.ok && h.redis?.ok;
   const kill = controlOf(c?.runtimeControls, "killSwitchActive"), intake = controlOf(c?.runtimeControls, "intakeEnabled");
 
@@ -45,7 +43,7 @@ export default function OverviewPage() {
       </section>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat title="Waiting for you" value={dec.loaded ? waiting.length : "—"} sub={waiting.length ? "Approve or reject in Telegram" : "Nothing needs a decision"} accent={waiting.length > 0} />
+        <Stat title="Waiting for you" value={dec.loaded ? waiting.length : "—"} sub={!dec.loaded ? undefined : waiting.length ? "Approve or reject in Telegram" : "Nothing needs a decision"} accent={waiting.length > 0} />
         <Stat title="Signals today" value={dec.loaded ? today.length : "—"} sub={dec.loaded ? `${decisions.length} recent in total` : undefined} />
         <Stat title="Intake" value={h?.outbox ? h.outbox.completed : "—"} sub={h?.outbox ? (h.outbox.deadLetter + h.outbox.pending + h.outbox.processing === 0 ? "all processed" : `${h.outbox.pending + h.outbox.processing} in flight · ${h.outbox.deadLetter} dead-lettered`) : undefined} tone={h?.outbox && h.outbox.deadLetter > 0 ? "down" : undefined} />
         <Stat title="System" value={h ? (allOk ? "Healthy" : "Degraded") : "—"} tone={h ? (allOk ? "up" : "down") : undefined} sub={h ? `backup ${ago(h.lastSuccessfulBackupAt ?? null)} · audit check ${ago(h.lastSuccessfulAuditVerificationAt ?? null)}` : undefined} />

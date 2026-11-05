@@ -28,7 +28,7 @@ export function NotificationsBell() {
       </button>
       {open && (
         <div className="absolute right-0 z-40 mt-2 w-[min(92vw,22rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-dropdown">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3"><p className="text-sm font-semibold text-ink">Notifications</p><span className="text-[11px] text-slate-400">{loaded?.source === "live" ? "live" : "sample data"}</span></div>
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3"><p className="text-sm font-semibold text-ink">Notifications</p><span className="text-[11px] text-slate-400">live</span></div>
           {items.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">Nothing has happened yet.</p> : (
             <ul className="max-h-80 divide-y divide-slate-50 overflow-y-auto">{items.slice(0, 6).map((n) => (
               <li key={n.id} className="flex gap-3 px-4 py-3"><span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", DOT[n.severity])} /><div className="min-w-0"><p className="text-[13px] font-medium leading-snug text-ink">{n.title}</p><p className="mt-0.5 truncate text-xs text-slate-400">{ago(n.at)}{n.detail ? ` · ${n.detail}` : ""}</p></div></li>

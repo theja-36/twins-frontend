@@ -4,6 +4,7 @@ import React from "react";
 import { useLoaded } from "@/components/trading/hooks";
 import { getPaperStatus } from "@/services/trading";
 import { NotificationsBell } from "./NotificationsBell";
+import { useBackendState } from "@/services/backendState";
 import { ThemeToggle } from "./ThemeToggle";
 import {
   Menu,
@@ -19,7 +20,8 @@ interface HeaderProps {
 
 export function Header({ onOpenMobileMenu }: HeaderProps) {
   const { loaded } = useLoaded(getPaperStatus, 30_000);
-  const live = loaded?.source === "live";
+  const backend = useBackendState();
+  const live = loaded?.source === "live" && backend.error === null;
   return (
     <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b border-slate-200/80 bg-canvas/90 px-4 sm:px-8 backdrop-blur-md">
       {/* Left: Mobile Menu + Editorial Header */}
@@ -65,11 +67,11 @@ export function Header({ onOpenMobileMenu }: HeaderProps) {
           />
         </div>
 
-        {/* Environment indicator: green when the backend answers, amber when this is mock data */}
-        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold shadow-2xs ${live ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-amber-50 border-amber-200/90 text-amber-900"}`}>
-          <span className={`h-2 w-2 rounded-full animate-pulse ${live ? "bg-emerald-500" : "bg-amber-500"}`} />
-          <span className="hidden sm:inline">{live ? "Live backend" : "Demo Data"}</span>
-          <span className={`text-[10px] font-normal hidden md:inline ${live ? "text-emerald-700/80" : "text-amber-700/80"}`}>{live ? "(paper only)" : "(No Backend)"}</span>
+        {/* Environment indicator: green when the backend answers, red when it does not (there is no sample data) */}
+        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold shadow-2xs ${live ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"}`}>
+          <span className={`h-2 w-2 rounded-full animate-pulse ${live ? "bg-emerald-500" : "bg-rose-500"}`} />
+          <span className="hidden sm:inline">{live ? "Live backend" : backend.error === "not_configured" || backend.error === null ? "No backend" : "Backend problem"}</span>
+          <span className={`text-[10px] font-normal hidden md:inline ${live ? "text-emerald-700/80" : "text-rose-700/80"}`}>{live ? "(paper only)" : backend.error === "not_configured" || backend.error === null ? "(nothing shown)" : "(see banner)"}</span>
         </div>
 
         <ThemeToggle />
