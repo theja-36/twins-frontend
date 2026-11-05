@@ -7,7 +7,7 @@ import { PaperStrip } from "@/components/trading/PaperStrip";
 import { useLoaded } from "@/components/trading/hooks";
 import { Chip, DataBanner, Dot, Empty, PageHeader, Skeleton, SourceBadge, Stat, card } from "@/components/trading/ui";
 import { ago, getApprovals, getDecisions, inr, px } from "@/services/trading";
-import { getHealth, getNotifications, getSystemConfig } from "@/services/system";
+import { controlOf, getHealth, getNotifications, getSystemConfig } from "@/services/system";
 import { cn } from "@/lib/utils";
 
 const SEV: Record<string, string> = { critical: "bg-rose-500", warning: "bg-amber-500", info: "bg-royal-500" };
@@ -24,6 +24,7 @@ export default function OverviewPage() {
   const worst = sources.find((s) => s.source === "mock-fallback") ?? sources.find((s) => s.source === "mock") ?? sources[0];
   const source = sources.length && sources.every((s) => s.source === "live") ? "live" : worst?.source;
   const allOk = h && h.database?.ok && h.redis?.ok;
+  const kill = controlOf(c?.runtimeControls, "killSwitchActive"), intake = controlOf(c?.runtimeControls, "intakeEnabled");
 
   return (
     <div className="space-y-6">
@@ -35,10 +36,10 @@ export default function OverviewPage() {
         {!c ? <Skeleton h={20} /> : (
           <>
             <Pill tone="ok" label="Live trading" value="Locked" />
-            <Pill tone={c.runtimeControls?.KILL_SWITCH_ACTIVE ? "bad" : "ok"} label="Kill switch" value={c.runtimeControls ? (c.runtimeControls.KILL_SWITCH_ACTIVE ? "ACTIVE" : "Clear") : "unreadable"} />
+            <Pill tone={kill === undefined ? "warn" : kill ? "bad" : "ok"} label="Kill switch" value={kill === undefined ? "unreadable" : kill ? "ACTIVE" : "Clear"} />
             <Pill tone={c.agentEngine.enabled ? "warn" : "ok"} label="Agent engine" value={c.agentEngine.enabled ? "Enforcing" : c.agentEngine.shadow ? "Shadow" : "Off"} />
             <Pill tone={c.paperTrading.effective ? "warn" : "off"} label="Paper trading" value={c.paperTrading.effective ? "Running" : "Off"} />
-            <Pill tone={c.runtimeControls?.INTAKE_ENABLED ? "ok" : "warn"} label="Intake" value={c.runtimeControls ? (c.runtimeControls.INTAKE_ENABLED ? "On" : "Off") : "unreadable"} />
+            <Pill tone={intake === undefined ? "warn" : intake ? "ok" : "warn"} label="Intake" value={intake === undefined ? "unreadable" : intake ? "On" : "Off"} />
           </>
         )}
       </section>
@@ -62,8 +63,8 @@ export default function OverviewPage() {
         </section>
         <section className={cn(card, "overflow-hidden")}>
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4"><h2 className="text-base font-semibold text-ink">Recent activity</h2><Link href="/notifications" className="inline-flex items-center gap-1 text-xs font-semibold text-royal-700 hover:underline">Notifications <ArrowRight className="h-3 w-3" /></Link></div>
-          {!notes.loaded ? <div className="p-5"><Skeleton h={140} /></div> : notes.loaded.data.length === 0 ? <div className="p-5"><Empty title="Quiet so far" hint="Approvals, paper trades, breaker events and safety changes show up here." /></div> : (
-            <ul className="divide-y divide-slate-50">{notes.loaded.data.slice(0, 6).map((n) => (
+          {!notes.loaded ? <div className="p-5"><Skeleton h={140} /></div> : notes.loaded.data.items.length === 0 ? <div className="p-5"><Empty title="Quiet so far" hint="Approvals, paper trades, breaker events and safety changes show up here." /></div> : (
+            <ul className="divide-y divide-slate-50">{notes.loaded.data.items.slice(0, 6).map((n) => (
               <li key={n.id} className="flex items-start gap-3 px-5 py-3"><span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", SEV[n.severity])} /><div className="min-w-0 flex-1"><p className="text-sm text-ink">{n.title}</p>{n.detail && <p className="truncate text-xs text-slate-400">{n.detail}</p>}</div><time className="shrink-0 text-xs text-slate-400" dateTime={n.at}>{ago(n.at)}</time></li>))}</ul>
           )}
         </section>

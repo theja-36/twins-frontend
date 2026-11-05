@@ -39,8 +39,11 @@ export interface AgentsStatus { engine: { enabled: boolean; shadow: boolean; hal
 export interface AppNotification { id: string; at: string; kind: string; severity: "critical" | "warning" | "info"; title: string; detail: string | null }
 export interface SystemConfig {
   source: string; environment: { appEnv: string | null; tradingMode: string | null; liveTradingGuardPasses: boolean; liveTradingEnabled: false; brokerOrders: false };
-  runtimeControls: { TRADING_ENABLED?: boolean; INTAKE_ENABLED?: boolean; KILL_SWITCH_ACTIVE?: boolean } | null;
+  runtimeControls: RuntimeControls | null;
   agentEngine: { valid: boolean; enabled?: boolean; shadow?: boolean; requiredAgents?: string[]; disabledAgents?: string[]; haltOn?: string[]; maxConcurrency?: number; thresholds?: Record<string, number>; weights?: Record<string, number> };
   paperTrading: { armedByHost: boolean; switch: SwitchState | null; effective: boolean; config: { slippageBps: number; entryExpiryMinutes: number; trail: { kind: string; value?: number }; trailAfterTargets: number; breakevenAfterTarget1: boolean; exitFractions: number[]; squareOffIstMinutes: number | null; maxPriceAgeSeconds: number } | null };
   risk: Record<"sizing" | "portfolio" | "circuitBreakers" | "expiry", Record<string, unknown> & { valid: boolean }>;
 }
+
+/** The backend's runtime safety snapshot (camelCase). Any field may be missing if the backend could not read it: the UI must then say "unreadable", never assume a safe value. */
+export interface RuntimeControls { tradingEnabled?: boolean; intakeEnabled?: boolean; killSwitchActive?: boolean; versions?: Record<string, number> }
