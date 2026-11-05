@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useLoaded } from "@/components/trading/hooks";
-import { Chip, Empty, LevelBar, PageHeader, Pnl, SafetyNote, Skeleton, SourceBadge, Stat, card } from "@/components/trading/ui";
+import { Chip, DataBanner, Empty, LevelBar, PageHeader, Pnl, SafetyNote, Skeleton, SourceBadge, Stat, card } from "@/components/trading/ui";
 import { ago, getPositions, inr, px, signed } from "@/services/trading";
 import type { PositionView } from "@/types/trading";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ export default function PositionsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Positions" subtitle="Simulated trades, managed by stop, targets and a trailing stop. Prices refresh every 10 seconds." right={<div className="flex items-center gap-2"><SourceBadge source={loaded?.source} note={loaded?.note} loading={loading} /><button onClick={refresh} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Refresh</button></div>} />
+      <DataBanner source={loaded?.source} note={loaded?.note} onRetry={refresh} />
       <SafetyNote>These are simulated positions. Nothing here is sent to a broker, and no real order exists.</SafetyNote>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

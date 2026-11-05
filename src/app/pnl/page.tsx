@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useLoaded } from "@/components/trading/hooks";
-import { Bar, EquityCurve, Chip, Empty, PageHeader, Pnl, SafetyNote, Skeleton, SourceBadge, Stat, card } from "@/components/trading/ui";
+import { Bar, DataBanner, EquityCurve, Chip, Empty, PageHeader, Pnl, SafetyNote, Skeleton, SourceBadge, Stat, card } from "@/components/trading/ui";
 import { ago, duration, getOutcomeStats, getOutcomes, getPaperSummary, inr, pct, signed } from "@/services/trading";
 import type { GroupStats } from "@/types/trading";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ export default function PnlPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="P&L and learning" subtitle="How the simulated trades are doing, measured in rupees and in R (multiples of the risk taken at entry)." right={<SourceBadge source={source} note={note} loading={sum.loading || st.loading} />} />
+      <DataBanner source={source} note={note} onRetry={() => { sum.refresh(); st.refresh(); out.refresh(); }} />
       <SafetyNote>Statistics only measure. They do not change any agent, weight or limit.</SafetyNote>
 
       {!s || !stats ? <div className="grid grid-cols-2 gap-3 lg:grid-cols-4"><Skeleton h={110} /><Skeleton h={110} /><Skeleton h={110} /><Skeleton h={110} /></div> : (

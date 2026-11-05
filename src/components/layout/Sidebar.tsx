@@ -18,8 +18,13 @@ import {
   ClipboardCheck,
   Briefcase,
   LineChart,
+  History,
+  Bot,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLoaded } from "@/components/trading/hooks";
+import { getPaperStatus } from "@/services/trading";
 
 interface SidebarProps {
   onNavClick?: () => void;
@@ -48,6 +53,7 @@ const navGroups: NavGroup[] = [
       { name: "Approvals", href: "/approvals", icon: ClipboardCheck, badge: "Human", badgeStyle: "acid" },
       { name: "Positions", href: "/positions", icon: Briefcase, badge: "Paper", badgeStyle: "royal" },
       { name: "P&L", href: "/pnl", icon: LineChart },
+      { name: "History", href: "/history", icon: History },
     ],
   },
   {
@@ -58,6 +64,14 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    label: "System",
+    items: [
+      { name: "Agents", href: "/agents", icon: Bot, badge: "Shadow", badgeStyle: "royal" },
+      { name: "Notifications", href: "/notifications", icon: Bell },
+      { name: "Settings", href: "/settings", icon: Settings },
+    ],
+  },
+  {
     label: "Governance",
     items: [
       { name: "Decision Lab", href: "/decisions", icon: Layers, badge: "Demo", badgeStyle: "neutral" },
@@ -65,14 +79,12 @@ const navGroups: NavGroup[] = [
       { name: "Activity & Audit", href: "/activity", icon: ShieldCheck },
     ],
   },
-  {
-    label: "System",
-    items: [{ name: "Settings", href: "/settings", icon: Settings }],
-  },
 ];
 
 export function Sidebar({ onNavClick, className }: SidebarProps) {
   const pathname = usePathname();
+  const { loaded } = useLoaded(getPaperStatus, 60_000);
+  const live = loaded?.source === "live";
 
   return (
     <aside
@@ -190,7 +202,7 @@ export function Sidebar({ onNavClick, className }: SidebarProps) {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
               </span>
               <span className="text-[11px] font-bold text-ink tracking-tight">
-                Demo Workspace
+                {live ? "Live workspace" : "Demo Workspace"}
               </span>
             </div>
             <span className="text-[10px] font-mono text-ink-muted">
@@ -199,7 +211,7 @@ export function Sidebar({ onNavClick, className }: SidebarProps) {
           </div>
 
           <p className="text-[11px] text-ink-secondary leading-snug">
-            Backend disconnected. Live order router is hardware-locked.
+            {live ? "Connected to the backend, read-only. Paper trading only; no real order can be placed." : "Backend not connected: sample data. No real order can be placed."}
           </p>
 
           <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-ink-muted font-mono">

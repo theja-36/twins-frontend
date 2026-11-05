@@ -15,6 +15,9 @@ const ALLOWED: RegExp[] = [
   /^risk\/decisions$/,
   /^risk\/approvals$/,
   /^paper\/(status|summary|positions|outcomes|outcomes\/stats)$/,
+  /^agents\/status$/,
+  /^notifications$/,
+  /^system\/config$/,
   /^paper\/trades\/[0-9a-f-]{36}\/events$/i,
 ];
 const PASS_PARAMS = ["limit", "status", "state"];

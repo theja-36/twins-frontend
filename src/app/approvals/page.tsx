@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useLoaded } from "@/components/trading/hooks";
-import { Chip, Empty, LevelBar, PageHeader, SafetyNote, Skeleton, SourceBadge, card } from "@/components/trading/ui";
+import { Chip, DataBanner, Empty, LevelBar, PageHeader, SafetyNote, Skeleton, SourceBadge, card } from "@/components/trading/ui";
 import { ago, getApprovals, getDecisions, inr, px } from "@/services/trading";
 import type { ApprovalSummary, DecisionSummary } from "@/types/trading";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ export default function ApprovalsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Approval cards" subtitle="A human decides every trade. Nothing is simulated or sent until you approve." right={<SourceBadge source={dec.loaded?.source} note={dec.loaded?.note} loading={dec.loading} />} />
+      <DataBanner source={dec.loaded?.source} note={dec.loaded?.note} onRetry={() => { dec.refresh(); app.refresh(); }} />
       <SafetyNote>Approving is recorded by the backend after it re-checks every gate. This page is read-only: approve or reject in Telegram (or with the operator command) until a secure sign-in is added here.</SafetyNote>
 
       <section className="space-y-3">

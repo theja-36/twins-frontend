@@ -100,3 +100,29 @@ export function EquityCurve({ outcomes }: { outcomes: TradeOutcome[] }) {
 export function Bar({ value, max, tone }: { value: number; max: number; tone: "up" | "down" }) {
   return <div className="h-2 w-full rounded-full bg-slate-100"><div className={cn("h-2 rounded-full", tone === "up" ? "bg-emerald-500" : "bg-rose-400")} style={{ width: `${Math.min(100, (Math.abs(value) / (max || 1)) * 100)}%` }} /></div>;
 }
+
+/** Shown when the page is NOT reading live data: says why, and offers a retry. Hidden when the data is live. */
+export function DataBanner({ source, note, onRetry }: { source?: DataSource; note?: string; onRetry?: () => void }) {
+  if (source === undefined || source === "live") return null;
+  const down = source === "mock-fallback";
+  return (
+    <div role="status" className={cn("flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2.5 text-xs", down ? "border-rose-200 bg-rose-50/70 text-rose-800" : "border-amber-200 bg-amber-50/70 text-amber-900")}>
+      <span><b>{down ? "Backend problem." : "Sample data."}</b> {note ?? "These numbers are examples, not real activity."}</span>
+      {onRetry && <button onClick={onRetry} className="rounded-lg border border-current/30 px-2.5 py-1 font-semibold hover:bg-white/50">Retry</button>}
+    </div>
+  );
+}
+export function Section({ title, hint, children, right }: { title: string; hint?: string; children: React.ReactNode; right?: React.ReactNode }) {
+  return (
+    <section className={cn(card, "p-5 sm:p-6")}>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-2"><div><h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>{hint && <p className="mt-0.5 text-xs text-slate-500">{hint}</p>}</div>{right}</div>
+      {children}
+    </section>
+  );
+}
+export function KV({ rows }: { rows: Array<[string, React.ReactNode]> }) {
+  return <dl className="divide-y divide-slate-100 text-sm">{rows.map(([k, v]) => <div key={k} className="flex flex-col gap-0.5 py-2.5 sm:flex-row sm:items-baseline sm:justify-between"><dt className="text-slate-500">{k}</dt><dd className="break-words font-mono text-[13px] font-medium text-ink sm:text-right">{v}</dd></div>)}</dl>;
+}
+export function Dot({ tone }: { tone: "ok" | "warn" | "bad" | "off" }) {
+  return <span className={cn("inline-block h-2 w-2 rounded-full", tone === "ok" && "bg-emerald-500", tone === "warn" && "bg-amber-500", tone === "bad" && "bg-rose-500", tone === "off" && "bg-slate-300")} />;
+}
