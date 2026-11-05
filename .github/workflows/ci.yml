@@ -1,0 +1,26 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  build:
+    name: build (type-check, lint, production build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx next build
+      - name: The API token must never reach the client bundle
+        run: |
+          if grep -rIl "TWINS_API_KEY" .next/static; then echo "token variable name found in client bundle"; exit 1; fi
