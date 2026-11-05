@@ -52,9 +52,28 @@ npm run build
 npm run start
 ```
 
-### Connecting to Live API (When Ready)
-Create a `.env.local` file:
+### Connecting to the live backend (read-only)
+The browser never talks to the backend directly. A server-side proxy (`src/app/api/twins/[...path]/route.ts`) forwards **GET requests on an allow-list** (`health`, `risk/decisions`, `risk/approvals`, `paper/*`) and keeps the API token on the server.
 ```env
-NEXT_PUBLIC_TWINS_API_URL=https://your-twins-backend-api.internal
+# .env.local
+NEXT_PUBLIC_TWINS_LIVE=1
+TWINS_API_URL=http://127.0.0.1:4000      # server-only
+TWINS_API_KEY=...                         # server-only, never NEXT_PUBLIC_
 ```
-The client in `src/services/api.ts` will automatically route calls to your live backend.
+If the backend is not configured or unreachable the pages fall back to clearly labelled mock data. Staging's API listens on the VPS loopback only: use an SSH tunnel (`ssh -L 4000:127.0.0.1:4000 hostinger-vps`).
+
+**Safety:** there is no write path. Only GET is proxied; approving or rejecting a trade is done in Telegram (or the operator command), not from this UI; every page labels paper data as paper.
+
+## Trading views (wired to the backend, mock fallback)
+| Route | Shows | Backend |
+|---|---|---|
+| `/signals` | Every parsed signal after the safety gates: levels ladder, size, risk:reward, confidence, trust tier, status | `GET /risk/decisions` |
+| `/approvals` | Approval cards waiting for a human, approved cards handed to paper trading, recent approvals | `GET /risk/decisions?status=APPROVED_FOR_REVIEW`, `GET /risk/approvals` |
+| `/positions` | Simulated positions with stop/entry/target ladder, live P&L and R, state filters | `GET /paper/positions` |
+| `/pnl` | Total/realised/unrealised P&L, win rate, expectancy, profit factor, drawdown, equity curve (R), breakdowns, recent closed trades, small-sample warning | `GET /paper/summary`, `/paper/outcomes`, `/paper/outcomes/stats` |
+| `/settings` | Adds a read-only view of the paper-trading configuration | `GET /paper/status` |
+| `/` | Adds a paper-trading strip (switch state, open positions, P&L, win rate) | `GET /paper/status`, `/paper/outcomes/stats` |
+
+The header pill turns green ("Live backend (paper only)") when the backend answers. Screenshots: `docs/screenshots/` (desktop `d-*`, phone-width `m-*`).
+
+The earlier demo pages (Telegram Intake, Market Feed, Decision Lab, Snapshots, Activity) are unchanged and still run on mock data.

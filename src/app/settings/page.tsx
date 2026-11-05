@@ -20,6 +20,7 @@ import { twinsApi } from "@/services/api";
 import { SystemConfig } from "@/types";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { AuditSecurityBanner } from "@/components/ui/AuditSecurityBanner";
+import { PaperSettings } from "@/components/trading/PaperSettings";
 
 export default function SettingsPage() {
   const [config, setConfig] = useState<SystemConfig | null>(null);
@@ -253,6 +254,8 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <PaperSettings />
 
       {/* 4. Risk Governance & Safeguards */}
       <div className="rounded-xl bg-surface border border-terminal-border p-5 space-y-4">

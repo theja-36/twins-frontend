@@ -1,0 +1,31 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  build:
+    name: build (type-check, lint, production build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - name: Production build (with a sentinel API token and a server URL set)
+        run: npx next build
+        env:
+          TWINS_API_URL: http://127.0.0.1:4000
+          TWINS_API_KEY: ci-sentinel-token-7f3a9c1e5b2d4086
+      - name: The API token VALUE must never reach the client bundle
+        run: |
+          if grep -rIl "ci-sentinel-token-7f3a9c1e5b2d4086" .next/static; then echo "token value found in client bundle"; exit 1; fi
+          echo "token value absent from client bundle"

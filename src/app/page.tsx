@@ -23,6 +23,7 @@ import {
   Zap,
 } from "lucide-react";
 import { formatCurrency, formatNumber } from "@/lib/utils";
+import { PaperStrip } from "@/components/trading/PaperStrip";
 
 // 24-hour intake data points
 const hourlyData = [
@@ -188,6 +189,8 @@ export default function OverviewPage() {
           </div>
         </div>
       </div>
+
+      <PaperStrip />
 
       {/* 2. Asymmetric Summary Row with Micro-Sparklines */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
