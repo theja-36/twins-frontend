@@ -20,7 +20,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx tsc --noEmit
-      - run: npx next build
-      - name: The API token must never reach the client bundle
+      - name: Production build (with a sentinel API token and a server URL set)
+        run: npx next build
+        env:
+          TWINS_API_URL: http://127.0.0.1:4000
+          TWINS_API_KEY: ci-sentinel-token-7f3a9c1e5b2d4086
+      - name: The API token VALUE must never reach the client bundle
         run: |
-          if grep -rIl "TWINS_API_KEY" .next/static; then echo "token variable name found in client bundle"; exit 1; fi
+          if grep -rIl "ci-sentinel-token-7f3a9c1e5b2d4086" .next/static; then echo "token value found in client bundle"; exit 1; fi
+          echo "token value absent from client bundle"
