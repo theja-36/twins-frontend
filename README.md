@@ -64,16 +64,23 @@ If the backend is not configured or unreachable the pages fall back to clearly l
 
 **Safety:** there is no write path. Only GET is proxied; approving or rejecting a trade is done in Telegram (or the operator command), not from this UI; every page labels paper data as paper.
 
-## Trading views (wired to the backend, mock fallback)
-| Route | Shows | Backend |
+## Views (wired to the backend, labelled mock fallback)
+The server tells the browser whether it is wired to a backend (`/api/twins/mode`). If so every page reads live data through the proxy; if the backend is missing or unreachable a page shows clearly labelled sample data **and says why**, with a Retry button.
+
+| Route | Shows | Backend (GET only) |
 |---|---|---|
-| `/signals` | Every parsed signal after the safety gates: levels ladder, size, risk:reward, confidence, trust tier, status | `GET /risk/decisions` |
-| `/approvals` | Approval cards waiting for a human, approved cards handed to paper trading, recent approvals | `GET /risk/decisions?status=APPROVED_FOR_REVIEW`, `GET /risk/approvals` |
-| `/positions` | Simulated positions with stop/entry/target ladder, live P&L and R, state filters | `GET /paper/positions` |
-| `/pnl` | Total/realised/unrealised P&L, win rate, expectancy, profit factor, drawdown, equity curve (R), breakdowns, recent closed trades, small-sample warning | `GET /paper/summary`, `/paper/outcomes`, `/paper/outcomes/stats` |
-| `/settings` | Adds a read-only view of the paper-trading configuration | `GET /paper/status` |
-| `/` | Adds a paper-trading strip (switch state, open positions, P&L, win rate) | `GET /paper/status`, `/paper/outcomes/stats` |
+| `/` Overview | safety posture, what is waiting for you, signals today, intake, system health, paper strip, latest signals and activity | `/system/config`, `/health/status`, `/risk/decisions`, `/risk/approvals`, `/paper/*`, `/notifications` |
+| `/signals` | every parsed signal after the safety gates (levels ladder, size, risk:reward, confidence, trust tier) | `/risk/decisions` |
+| `/approvals` | approval cards waiting for a human, approved cards, recent decisions (read-only: approve in Telegram) | `/risk/decisions?status=APPROVED_FOR_REVIEW`, `/risk/approvals` |
+| `/positions` | simulated positions with stop/entry/target ladder, live P&L and R | `/paper/positions` |
+| `/pnl` | P&L, win rate, expectancy, profit factor, drawdown, equity curve, breakdowns, small-sample warning | `/paper/summary`, `/paper/outcomes`, `/paper/outcomes/stats` |
+| `/history` | merged newest-first log of signals, approvals and closed trades, with filter, search and paging | `/risk/decisions`, `/risk/approvals`, `/paper/outcomes` |
+| `/agents` | the twelve research agents (weights, required, can-block, time limit, dependencies), engine mode, recent recorded runs | `/agents/status` |
+| `/notifications` (+ header bell) | audited system events (safety switches, breakers, approvals, paper trades, paper-switch changes, dead letters) with severity and kind filters | `/notifications` |
+| `/settings` | full read-only configuration: safety posture, paper trading (both keys), agent engine, sizing, portfolio, circuit breakers, expiry | `/system/config` |
 
-The header pill turns green ("Live backend (paper only)") when the backend answers. Screenshots: `docs/screenshots/` (desktop `d-*`, phone-width `m-*`).
+Dark mode: the moon/sun button in the header (saved in the browser; follows the system setting until you choose; `?theme=dark` forces it for a link).
 
-The earlier demo pages (Telegram Intake, Market Feed, Decision Lab, Snapshots, Activity) are unchanged and still run on mock data.
+Screenshots (`docs/screenshots/`): `light-*` desktop, `dark-*` desktop dark, `mobile-*` phone-width layout. They were taken against a local API with the project's synthetic test data (hence the odd symbols), i.e. real integration, not mock data.
+
+The older demo pages (Telegram Intake, Market Feed, Decision Lab, Snapshots, Activity) are unchanged, labelled "Demo" in the menu, and still run on sample data. The old demo settings and overview content was replaced by the real views above.

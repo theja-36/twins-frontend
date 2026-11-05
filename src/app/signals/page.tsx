@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useLoaded } from "@/components/trading/hooks";
-import { Chip, Empty, LevelBar, PageHeader, Skeleton, SourceBadge, card } from "@/components/trading/ui";
+import { Chip, DataBanner, Empty, LevelBar, PageHeader, Skeleton, SourceBadge, card } from "@/components/trading/ui";
 import { ago, getDecisions, inr, px } from "@/services/trading";
 import type { DecisionSummary } from "@/types/trading";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ export default function SignalsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Signals" subtitle="Every parsed signal after the safety gates: its levels, size and where it stands." right={<SourceBadge source={loaded?.source} note={loaded?.note} loading={loading} />} />
+      <DataBanner source={loaded?.source} note={loaded?.note} onRetry={refresh} />
       <div className="flex flex-wrap gap-2">
         {FILTERS.map(([k, l]) => <button key={k} onClick={() => setStatus(k)} className={cn("rounded-full border px-3.5 py-1.5 text-xs font-medium transition", status === k ? "border-royal-600 bg-royal-600 text-white shadow-hero" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300")}>{l}</button>)}
       </div>

@@ -3,10 +3,11 @@
 import React from "react";
 import { useLoaded } from "@/components/trading/hooks";
 import { getPaperStatus } from "@/services/trading";
+import { NotificationsBell } from "./NotificationsBell";
+import { ThemeToggle } from "./ThemeToggle";
 import {
   Menu,
   Search,
-  Bell,
   Lock,
   Calendar,
   Sparkles,
@@ -38,16 +39,16 @@ export function Header({ onOpenMobileMenu }: HeaderProps) {
             </h1>
             <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-royal-700 border border-royal-200/70 shadow-2xs">
               <span className="h-1.5 w-1.5 rounded-full bg-royal-600" />
-              Live Ingestion Idle
+              Paper mode
             </span>
           </div>
           <p className="hidden sm:flex items-center gap-2 text-xs text-ink-muted mt-0.5 font-medium">
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3 text-slate-400" />
-              <span>Thu, Nov 5 • Session #sess_8f9021da</span>
+              <span>{new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })} • staging</span>
             </span>
             <span>•</span>
-            <span>Audit-First Isolation</span>
+            <span>Live trading locked</span>
           </p>
         </div>
       </div>
@@ -71,14 +72,8 @@ export function Header({ onOpenMobileMenu }: HeaderProps) {
           <span className={`text-[10px] font-normal hidden md:inline ${live ? "text-emerald-700/80" : "text-amber-700/80"}`}>{live ? "(paper only)" : "(No Backend)"}</span>
         </div>
 
-        {/* Notifications Button */}
-        <button
-          className="relative p-2 rounded-xl bg-white border border-slate-200/80 text-ink-secondary hover:text-ink hover:border-slate-300 shadow-2xs transition-all"
-          title="Telemetry Alerts (Mock)"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-royal-600 ring-2 ring-white" />
-        </button>
+        <ThemeToggle />
+        <NotificationsBell />
 
         {/* Auditor Profile Pill */}
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200">

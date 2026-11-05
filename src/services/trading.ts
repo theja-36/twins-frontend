@@ -1,21 +1,29 @@
 import type { ApprovalSummary, DecisionSummary, Loaded, OutcomeStats, PaperStatus, PnlSummary, PositionView, TradeOutcome, GroupStats } from "@/types/trading";
 
 /**
- * Data layer for the trading views. LIVE mode (NEXT_PUBLIC_TWINS_LIVE=1) reads the backend through the server-side proxy at /api/twins/*
- * (the API token never reaches the browser). If the backend is not configured or unreachable, every call falls back to clearly-labelled mock data.
+ * Data layer for the trading views. The server tells us whether it is wired to a backend (`/api/twins/mode`); if so every call reads the backend through the server-side proxy
+ * (`/api/twins/*`, GET only; the API token never reaches the browser). If the backend is not configured or unreachable, a call falls back to clearly labelled mock data and says why.
  * Nothing here can create, approve or cancel anything: the proxy forwards GET only.
  */
-export const LIVE = process.env.NEXT_PUBLIC_TWINS_LIVE === "1";
+let modePromise: Promise<boolean> | null = null;
+export function isLive(): Promise<boolean> {
+  if (!modePromise) modePromise = fetch("/api/twins/mode", { cache: "no-store" }).then((r) => (r.ok ? r.json() : { configured: false })).then((j) => Boolean(j.configured)).catch(() => false);
+  return modePromise;
+}
+export const recheckMode = (): void => { modePromise = null; };
 
 async function live<T>(path: string): Promise<T> {
   const res = await fetch(`/api/twins/${path}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`${res.status}`);
   return (await res.json()) as T;
 }
-async function load<T>(path: string, mock: () => T, pick: (raw: any) => T = (r) => r): Promise<Loaded<T>> {
-  if (!LIVE) return { data: mock(), source: "mock" };
+export async function load<T>(path: string, mock: () => T, pick: (raw: any) => T = (r) => r): Promise<Loaded<T>> {
+  if (!(await isLive())) return { data: mock(), source: "mock", note: "No backend configured on this server: showing sample data." };
   try { return { data: pick(await live<unknown>(path)), source: "live" }; }
-  catch (e) { return { data: mock(), source: "mock-fallback", note: e instanceof Error && e.message === "503" ? "Backend not configured on this server" : "Backend unreachable" }; }
+  catch (e) {
+    const code = e instanceof Error ? e.message : "";
+    return { data: mock(), source: "mock-fallback", note: code === "503" ? "Backend not configured on this server" : code === "401" ? "The server's API token was rejected" : code === "502" ? "Backend unreachable from this server" : "Backend returned an unexpected answer" };
+  }
 }
 
 // ─── deterministic mock data (stable across renders) ─────────────────────────────────────────────────────────────────────────────────────
