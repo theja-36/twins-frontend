@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import type { DataSource, TradeOutcome } from "@/types/trading";
+import type { TradeOutcome } from "@/types/trading";
+import { ERROR_TEXT, requestRetry, useBackendState } from "@/services/backendState";
 
 const label = "text-[11px] font-mono uppercase tracking-wider text-slate-500";
 export const card = "rounded-2xl border border-slate-200/80 bg-white shadow-card";
@@ -14,12 +15,14 @@ export function PageHeader({ title, subtitle, right }: { title: string; subtitle
   );
 }
 
-export function SourceBadge({ source, note, loading }: { source?: DataSource; note?: string; loading?: boolean }) {
-  const live = source === "live";
-  const text = source === undefined ? "Loading" : live ? "Live · paper" : source === "mock" ? "Mock data" : "Mock · backend down";
+/** Backend connection badge, driven by the shared backend state (props are kept for call-site compatibility and ignored). */
+export function SourceBadge({ loading }: { source?: unknown; note?: string; loading?: boolean }) {
+  const st = useBackendState();
+  const down = st.error !== null, ok = !down && st.lastOkAt !== null;
+  const text = down ? "Backend problem" : ok ? "Live · paper" : "Connecting";
   return (
-    <span title={note} className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium", live ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-800")}>
-      <span className={cn("h-2 w-2 rounded-full", live ? "bg-emerald-500" : "bg-amber-500", loading && "animate-pulse")} />{text}
+    <span className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium", down ? "border-rose-200 bg-rose-50 text-rose-700" : ok ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-600")}>
+      <span className={cn("h-2 w-2 rounded-full", down ? "bg-rose-500" : ok ? "bg-emerald-500" : "bg-slate-400", loading && "animate-pulse")} />{text}
     </span>
   );
 }
@@ -55,7 +58,18 @@ export function Chip({ kind, children }: { kind: string; children?: React.ReactN
 export function Empty({ title, hint }: { title: string; hint: string }) {
   return <div className={cn(card, "px-6 py-14 text-center")}><p className="text-base font-semibold text-ink">{title}</p><p className="mx-auto mt-1 max-w-md text-sm text-slate-500">{hint}</p></div>;
 }
-export function Skeleton({ h = 96 }: { h?: number }) { return <div style={{ height: h }} className="animate-pulse rounded-2xl bg-slate-200/60" />; }
+/** Placeholder while loading. If the backend is unavailable it says so instead of pulsing forever, and offers Retry. */
+export function Skeleton({ h = 96 }: { h?: number }) {
+  const st = useBackendState();
+  if (st.error === null) return <div style={{ height: h }} className="animate-pulse rounded-2xl bg-slate-200/60" />;
+  const t = ERROR_TEXT[st.error];
+  return (
+    <div role="alert" style={{ minHeight: Math.min(h, 140) }} className="flex flex-col items-start justify-center gap-1.5 rounded-2xl border border-rose-200 bg-rose-50/60 px-5 py-4">
+      <p className="text-sm font-semibold text-rose-800">{t.title}</p><p className="text-xs text-rose-700/90">{t.body}</p>
+      <button onClick={requestRetry} className="mt-1 rounded-lg border border-rose-300 px-2.5 py-1 text-xs font-semibold text-rose-800 hover:bg-white/60">Retry</button>
+    </div>
+  );
+}
 
 /** Stop ← entry → targets, with the last price marker. Works for BUY and SELL (the axis is simply price). */
 export function LevelBar({ stop, entry, targets, last, targetsHit }: { stop: number; entry: number; targets: number[]; last: number | null; targetsHit: number }) {
@@ -101,17 +115,8 @@ export function Bar({ value, max, tone }: { value: number; max: number; tone: "u
   return <div className="h-2 w-full rounded-full bg-slate-100"><div className={cn("h-2 rounded-full", tone === "up" ? "bg-emerald-500" : "bg-rose-400")} style={{ width: `${Math.min(100, (Math.abs(value) / (max || 1)) * 100)}%` }} /></div>;
 }
 
-/** Shown when the page is NOT reading live data: says why, and offers a retry. Hidden when the data is live. */
-export function DataBanner({ source, note, onRetry }: { source?: DataSource; note?: string; onRetry?: () => void }) {
-  if (source === undefined || source === "live") return null;
-  const down = source === "mock-fallback";
-  return (
-    <div role="status" className={cn("flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2.5 text-xs", down ? "border-rose-200 bg-rose-50/70 text-rose-800" : "border-amber-200 bg-amber-50/70 text-amber-900")}>
-      <span><b>{down ? "Backend problem." : "Sample data."}</b> {note ?? "These numbers are examples, not real activity."}</span>
-      {onRetry && <button onClick={onRetry} className="rounded-lg border border-current/30 px-2.5 py-1 font-semibold hover:bg-white/50">Retry</button>}
-    </div>
-  );
-}
+/** Kept so pages compile; the connection problem is shown once, by the global banner in the app shell. */
+export function DataBanner(_props: { source?: unknown; note?: string; onRetry?: () => void }) { return null; }
 export function Section({ title, hint, children, right }: { title: string; hint?: string; children: React.ReactNode; right?: React.ReactNode }) {
   return (
     <section className={cn(card, "p-5 sm:p-6")}>

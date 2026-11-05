@@ -3,7 +3,8 @@ import React from "react";
 import { useLoaded } from "./hooks";
 import { DataBanner, Dot, KV, Section, SourceBadge, Skeleton } from "./ui";
 import { ago } from "@/services/trading";
-import { controlOf, getSystemConfig } from "@/services/system";
+import { controlOf, getReadiness, getSystemConfig } from "@/services/system";
+import type { ReadinessItem } from "@/types/trading";
 
 const hhmm = (m: number | null): string => (m === null ? "never" : `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")} IST`);
 const pretty = (k: string): string => k.replace(/([A-Z])/g, " $1").replace(/_/g, " ").toLowerCase();
@@ -13,6 +14,7 @@ const yn = (b: boolean | undefined, yes = "Yes", no = "No") => <span className="
 /** Full, read-only view of how the system is configured (as the API process sees it). Nothing here can be changed from the browser. */
 export function ConfigView() {
   const { loaded, loading, refresh } = useLoaded(getSystemConfig, 60_000);
+  const ready = useLoaded(getReadiness, 30_000).loaded?.data;
   const c = loaded?.data;
   if (!c) return <Skeleton h={320} />;
   const p = c.paperTrading, e = c.agentEngine;
@@ -27,6 +29,21 @@ export function ConfigView() {
           ["Environment", `${c.environment.appEnv ?? "—"} · mode ${c.environment.tradingMode ?? "—"}`], ["Live trading", <span key="l" className="inline-flex items-center gap-2"><Dot tone="ok" />Locked (cannot be enabled)</span>], ["Broker orders", <span key="b" className="inline-flex items-center gap-2"><Dot tone="ok" />None exist</span>],
           ["Live-trading guard", yn(c.environment.liveTradingGuardPasses, "Passing", "FAILING")], ["Kill switch", kill === undefined ? <span key="k" className="inline-flex items-center gap-2"><Dot tone="warn" />unreadable</span> : yn(!kill, "Clear", "ACTIVE")], ["Intake", intake === undefined ? "unreadable" : yn(intake, "On", "Off")], ["Trading control", trading === undefined ? "unreadable" : yn(trading, "On", "Off")],
         ]} />
+      </Section>
+
+      <Section title="Paper trading: ready to switch on?" hint="A live checklist. It turns nothing on; switching on is two separate actions of yours (arm on the host, then flip the audited switch).">
+        {!ready ? <Skeleton h={120} /> : (
+          <>
+            <p className={`mb-3 rounded-lg px-3 py-2 text-sm font-medium ${ready.enabledNow ? "bg-amber-50 text-amber-900" : ready.readyToEnable ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}`}>
+              {ready.enabledNow ? "Paper trading is ON (both keys)." : ready.readyToEnable ? "Nothing blocks a GO. It is still OFF." : `Not ready: ${ready.blockers.length} blocker${ready.blockers.length === 1 ? "" : "s"}.`}
+            </p>
+            <ul className="divide-y divide-slate-100">{ready.items.map((i: ReadinessItem) => (
+              <li key={i.id} className="flex gap-3 py-2.5">
+                <span className="mt-0.5 w-14 shrink-0 text-[11px] font-mono font-semibold uppercase tracking-wider" style={{ color: i.status === "pass" ? "#059669" : i.status === "fail" ? "#E11D48" : "#94A3B8" }}>{i.status === "pass" ? "ok" : i.status === "fail" ? (i.blocking ? "blocker" : "no") : i.status}</span>
+                <div className="min-w-0"><p className="text-sm font-medium text-ink">{i.title}</p><p className="text-xs text-slate-500">{i.detail}</p></div>
+              </li>))}</ul>
+          </>
+        )}
       </Section>
 
       <Section title="Paper trading" hint="Simulation only. It runs only when BOTH keys are on.">

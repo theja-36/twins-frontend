@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { X } from "lucide-react";
+import { BackendBanner } from "./BackendBanner";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -48,6 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Content Wrapper */}
         <div className="flex-1 flex flex-col min-w-0">
           <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+          <BackendBanner />
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
             {children}
           </main>

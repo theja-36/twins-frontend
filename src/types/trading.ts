@@ -24,7 +24,7 @@ export interface OutcomeStats extends GroupStats {
   avgWinR: number | null; avgLossR: number | null; expectancyR: number | null; profitFactor: number | null; maxDrawdownR: number; avgHoldingSeconds: number | null;
   byCloseReason: Record<string, GroupStats>; bySourceTrustTier: Record<string, GroupStats>; byResearchAssessment: Record<string, GroupStats>; minSampleForMeaning: number; sampleIsMeaningful: boolean;
 }
-export type DataSource = "live" | "mock" | "mock-fallback";
+export type DataSource = "live";
 export interface Loaded<T> { data: T; source: DataSource; note?: string }
 
 export interface HealthStatus {
@@ -47,3 +47,14 @@ export interface SystemConfig {
 
 /** The backend's runtime safety snapshot (camelCase). Any field may be missing if the backend could not read it: the UI must then say "unreadable", never assume a safe value. */
 export interface RuntimeControls { tradingEnabled?: boolean; intakeEnabled?: boolean; killSwitchActive?: boolean; versions?: Record<string, number> }
+
+export interface IntakeStatus {
+  counts: Record<string, number>; total: number; oldestOpenSeconds: number | null; lastReceivedAt: string | null; lastCompletedAt: string | null;
+  recent: Array<{ id: string; type: string; status: string; attempts: number; receivedAt: string | null; completedAt: string | null; channel: string }>;
+}
+export interface SnapshotFile { kind: string; present: boolean; bytes: number; asOf: string | null; ageSeconds: number | null }
+export interface IndexPrice { market: string; symbol: string; level: number; previousClose: number | null; changePct1d: number | null; asOf: string; ageSeconds: number | null }
+export interface ProviderFile { name: string; present: boolean; format: string | null; source: string | null; asOf: string | null; ageSeconds: number | null; count: number | null }
+export interface MarketSnapshot { visible: boolean; generation: { status: string; id: string | null } | null; files: SnapshotFile[]; indices: IndexPrice[]; quoteCount: number; optionQuoteCount: number; providers: ProviderFile[] }
+export interface ReadinessItem { id: string; title: string; status: "pass" | "fail" | "info" | "manual"; blocking: boolean; detail: string }
+export interface Readiness { readyToEnable: boolean; enabledNow: boolean; blockers: string[]; items: ReadinessItem[] }

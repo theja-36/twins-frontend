@@ -15,8 +15,7 @@ export default function HistoryPage() {
   const dec = useLoaded(() => getDecisions(), 30_000), app = useLoaded(getApprovals, 30_000), out = useLoaded(getOutcomes, 30_000);
   const [kind, setKind] = useState<(typeof FILTERS)[number][0]>("all"), [q, setQ] = useState(""), [shown, setShown] = useState(PAGE);
   const loaded = dec.loaded ?? app.loaded ?? out.loaded;
-  const source = [dec.loaded, app.loaded, out.loaded].every((l) => l?.source === "live") ? "live" : [dec.loaded, app.loaded, out.loaded].some((l) => l?.source === "mock-fallback") ? "mock-fallback" : loaded?.source;
-  const note = [dec.loaded, app.loaded, out.loaded].find((l) => l && l.source !== "live")?.note;
+  const source = loaded ? "live" : undefined, note = undefined;
 
   const entries = useMemo<Entry[]>(() => {
     const e: Entry[] = [];

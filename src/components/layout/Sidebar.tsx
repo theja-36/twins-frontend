@@ -59,8 +59,8 @@ const navGroups: NavGroup[] = [
   {
     label: "Data",
     items: [
-      { name: "Telegram Intake", href: "/intake", icon: Send, badge: "Demo", badgeStyle: "neutral" },
-      { name: "Market Feed", href: "/market", icon: TrendingUp, badge: "Demo", badgeStyle: "neutral" },
+      { name: "Telegram Intake", href: "/intake", icon: Send },
+      { name: "Market data", href: "/market", icon: TrendingUp },
     ],
   },
   {
@@ -69,14 +69,6 @@ const navGroups: NavGroup[] = [
       { name: "Agents", href: "/agents", icon: Bot, badge: "Shadow", badgeStyle: "royal" },
       { name: "Notifications", href: "/notifications", icon: Bell },
       { name: "Settings", href: "/settings", icon: Settings },
-    ],
-  },
-  {
-    label: "Governance",
-    items: [
-      { name: "Decision Lab", href: "/decisions", icon: Layers, badge: "Demo", badgeStyle: "neutral" },
-      { name: "Snapshots", href: "/snapshots", icon: HardDrive },
-      { name: "Activity & Audit", href: "/activity", icon: ShieldCheck },
     ],
   },
 ];
@@ -202,7 +194,7 @@ export function Sidebar({ onNavClick, className }: SidebarProps) {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
               </span>
               <span className="text-[11px] font-bold text-ink tracking-tight">
-                {live ? "Live workspace" : "Demo Workspace"}
+                {live ? "Live workspace" : "Not connected"}
               </span>
             </div>
             <span className="text-[10px] font-mono text-ink-muted">
@@ -211,7 +203,7 @@ export function Sidebar({ onNavClick, className }: SidebarProps) {
           </div>
 
           <p className="text-[11px] text-ink-secondary leading-snug">
-            {live ? "Connected to the backend, read-only. Paper trading only; no real order can be placed." : "Backend not connected: sample data. No real order can be placed."}
+            {live ? "Connected to the backend, read-only. Paper trading only; no real order can be placed." : "Backend not connected: nothing is shown. No real order can be placed."}
           </p>
 
           <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-ink-muted font-mono">
