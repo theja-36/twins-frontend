@@ -56,5 +56,8 @@ export interface SnapshotFile { kind: string; present: boolean; bytes: number; a
 export interface IndexPrice { market: string; symbol: string; level: number; previousClose: number | null; changePct1d: number | null; asOf: string; ageSeconds: number | null }
 export interface ProviderFile { name: string; present: boolean; format: string | null; source: string | null; asOf: string | null; ageSeconds: number | null; count: number | null }
 export interface MarketSnapshot { visible: boolean; generation: { status: string; id: string | null } | null; files: SnapshotFile[]; indices: IndexPrice[]; quoteCount: number; optionQuoteCount: number; providers: ProviderFile[] }
+export type SourceStatus = "OK" | "DEGRADED" | "STALE" | "FAILING" | "MISSING" | "INVALID";
+export interface ProviderHealth { provider: string; status: SourceStatus; reasons: string[]; asOf: string | null; dataAgeSeconds: number | null; exportAgeSeconds: number | null; count: number | null; source: string | null; consecutiveFailures: number | null; usable: boolean }
+export interface SourceHealthProfile { generatedAt: string; overall: SourceStatus; passLogAvailable: boolean; counts: Record<SourceStatus, number>; providers: ProviderHealth[] }
 export interface ReadinessItem { id: string; title: string; status: "pass" | "fail" | "info" | "manual"; blocking: boolean; detail: string }
 export interface Readiness { readyToEnable: boolean; enabledNow: boolean; blockers: string[]; items: ReadinessItem[] }

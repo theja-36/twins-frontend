@@ -1,5 +1,5 @@
 import { load } from "./trading";
-import type { AgentsStatus, AppNotification, HealthStatus, IntakeStatus, MarketSnapshot, Readiness, SystemConfig } from "@/types/trading";
+import type { AgentsStatus, AppNotification, HealthStatus, IntakeStatus, MarketSnapshot, Readiness, SourceHealthProfile, SystemConfig } from "@/types/trading";
 
 /** Fetchers for the system views. Same rules as trading.ts: GET through the proxy; no sample data. */
 export const getHealth = () => load<HealthStatus>("health/status");
@@ -9,6 +9,7 @@ export const getNotifications = (limit = 100) => load<NotificationFeed>(`notific
 export const getSystemConfig = () => load<SystemConfig>("system/config");
 export const getIntakeStatus = (limit = 25) => load<IntakeStatus>(`intake/status?limit=${limit}`);
 export const getMarketSnapshot = () => load<MarketSnapshot>("market/snapshot");
+export const getSourceHealth = () => load<SourceHealthProfile>("market/sources", (r) => (r && Array.isArray(r.providers) && typeof r.overall === "string" ? r : null));
 export const getReadiness = () => load<Readiness>("paper/readiness");
 
 /** Reads a control as true / false / undefined (undefined = the backend did not say). Never defaults to a "safe-looking" answer. */
