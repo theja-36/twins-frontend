@@ -4,15 +4,24 @@ import React from "react";
 import { useLoaded } from "@/components/trading/hooks";
 import { Chip, Dot, Empty, PageHeader, Pnl, Skeleton, SourceBadge, card } from "@/components/trading/ui";
 import { duration, px, signed } from "@/services/trading";
-import { getMarketSnapshot } from "@/services/system";
+import { getMarketSnapshot, getSourceHealth } from "@/services/system";
+import type { SourceStatus } from "@/types/trading";
 import { cn } from "@/lib/utils";
 
 const kb = (b: number): string => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1)} MB` : b >= 1000 ? `${Math.round(b / 1000)} kB` : `${b} B`);
 const FRESH_LIMIT = 120;
+const HEALTH_TONE: Record<SourceStatus, "ok" | "warn" | "bad" | "off"> = { OK: "ok", DEGRADED: "warn", STALE: "warn", FAILING: "bad", MISSING: "off", INVALID: "bad" };
+const REASON_TEXT: Record<string, string> = {
+  file_missing: "no data file yet", file_unreadable: "file could not be read", data_stale: "data is older than its limit", export_stale: "exporter has not rewritten it recently",
+  last_pass_failed: "last exporter pass failed", repeated_failures: "failed on several passes in a row", last_pass_skipped: "exporter skipped it on purpose (for example stale inputs)", no_pass_logged: "no exporter pass on record", unrecognized: "unrecognised reason code",
+};
+const reasonText = (r: string): string => REASON_TEXT[r] ?? r.replaceAll("_", " ");
 
 export default function MarketPage() {
   const { loaded, loading } = useLoaded(getMarketSnapshot, 15_000);
   const m = loaded?.data;
+  const { loaded: health } = useLoaded(getSourceHealth, 30_000);
+  const h = health?.data;
   return (
     <div className="space-y-6">
       <PageHeader title="Market data" subtitle="What the Kite feed last published, and the data files the research agents can read. Nothing here is a trading signal." right={<SourceBadge loading={loading} />} />
@@ -39,6 +48,21 @@ export default function MarketPage() {
               <span className="inline-flex items-center gap-2 text-sm"><Dot tone={m.generation?.status === "complete" ? "ok" : m.visible ? "warn" : "off"} /><b className="text-ink">{m.generation ? m.generation.status : "none"}</b>{m.generation?.id && <span className="font-mono text-xs text-slate-400">{m.generation.id}</span>}</span></div>
             <table className="w-full text-sm"><thead><tr className="text-left text-[11px] font-mono uppercase tracking-wider text-slate-500"><th className="px-5 py-3">File</th><th className="px-5 py-3">Present</th><th className="px-5 py-3 text-right">Size</th><th className="px-5 py-3 text-right">Age</th></tr></thead>
               <tbody>{m.files.map((f) => (<tr key={f.kind} className="border-t border-slate-50"><td className="px-5 py-3 font-mono text-[13px] text-ink">{f.kind}</td><td className="px-5 py-3"><Dot tone={f.present ? "ok" : "off"} /> <span className="text-slate-500">{f.present ? "yes" : "missing"}</span></td><td className="px-5 py-3 text-right font-mono text-slate-500">{f.present ? kb(f.bytes) : "—"}</td><td className="px-5 py-3 text-right font-mono text-slate-500">{f.ageSeconds === null ? "—" : duration(f.ageSeconds)}</td></tr>))}</tbody></table>
+          </section>
+
+          <section className={cn(card, "overflow-hidden")}>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-4">
+              <div><h2 className="text-base font-semibold text-ink">Source health</h2><p className="mt-0.5 text-xs text-slate-500">Whether each data source is current enough for the agents to use. Evidence only: it never approves or blocks a trade by itself.</p></div>
+              {h ? <span className="inline-flex items-center gap-2 text-sm"><Dot tone={HEALTH_TONE[h.overall]} /><b className="text-ink">Overall: {h.overall.toLowerCase()}</b></span> : null}
+            </div>
+            {!h ? <div className="p-5"><Skeleton h={120} /></div> : (
+              <ul className="divide-y divide-slate-50">{h.providers.map((p) => (
+                <li key={p.provider} className="flex flex-wrap items-start justify-between gap-3 px-5 py-3.5">
+                  <div className="flex items-start gap-3"><span className="mt-1"><Dot tone={HEALTH_TONE[p.status]} /></span><div><p className="font-mono text-[13px] text-ink">{p.provider}</p><p className="text-xs text-slate-400">{p.reasons.length ? p.reasons.map(reasonText).join("; ") : "current"}</p></div></div>
+                  <div className="text-right text-xs text-slate-500"><p><b className="text-ink">{p.status.toLowerCase()}</b>{p.usable ? "" : " · not used by agents"}</p><p className="text-slate-400">{p.dataAgeSeconds === null ? "data age unknown" : `data ${duration(p.dataAgeSeconds)} old`}{p.consecutiveFailures ? ` · ${p.consecutiveFailures} failed pass${p.consecutiveFailures === 1 ? "" : "es"} in a row` : ""}</p></div>
+                </li>))}</ul>
+            )}
+            {h && !h.passLogAvailable ? <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400">Exporter pass history is not available to the API, so failures are inferred from file age only.</p> : null}
           </section>
 
           <section className={cn(card, "overflow-hidden")}>

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
  *  - The backend bearer token lives only in server env (TWINS_API_KEY) and is never sent to the browser.
  *  - Only GET, and only an explicit allow-list of read endpoints, is forwarded. There is no way to create, change,
  *    approve or cancel anything through this proxy.
- *  - Not configured (no TWINS_API_URL / TWINS_API_KEY) => 503 { error: "backend_not_configured" }, and the UI shows mock data.
+ *  - Not configured (no TWINS_API_URL / TWINS_API_KEY) => 503 { error: "backend_not_configured" }; the UI then shows the "no backend" state (there is no sample data).
  */
 export const dynamic = "force-dynamic";
 
@@ -17,6 +17,7 @@ const ALLOWED: RegExp[] = [
   /^paper\/(status|summary|positions|outcomes|outcomes\/stats|readiness)$/,
   /^intake\/status$/,
   /^market\/snapshot$/,
+  /^market\/sources$/,
   /^agents\/status$/,
   /^notifications$/,
   /^system\/config$/,
