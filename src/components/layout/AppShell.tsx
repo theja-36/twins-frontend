@@ -5,6 +5,7 @@ import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { X } from "lucide-react";
 import { BackendBanner } from "./BackendBanner";
+import { PageTransition } from "@/components/motion/Motion";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -51,7 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />
           <BackendBanner />
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
-            {children}
+            <PageTransition>{children}</PageTransition>
           </main>
         </div>
       </div>

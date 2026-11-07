@@ -5,6 +5,7 @@ import { useLoaded } from "@/components/trading/hooks";
 import { Chip, DataBanner, Empty, LevelBar, PageHeader, Pnl, SafetyNote, Skeleton, SourceBadge, Stat, card } from "@/components/trading/ui";
 import { ago, getPositions, inr, px, signed } from "@/services/trading";
 import type { PositionView } from "@/types/trading";
+import { PortfolioPanels } from "@/components/trading/Panels";
 import { cn } from "@/lib/utils";
 
 const FILTERS = [["ALL", "All"], ["OPEN", "Open"], ["PENDING_ENTRY", "Pending"], ["CLOSED", "Closed"], ["CANCELLED", "Cancelled"]] as const;
@@ -20,7 +21,7 @@ export default function PositionsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Positions" subtitle="Simulated trades, managed by stop, targets and a trailing stop. Prices refresh every 10 seconds." right={<div className="flex items-center gap-2"><SourceBadge source={loaded?.source} note={loaded?.note} loading={loading} /><button onClick={refresh} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Refresh</button></div>} />
+      <PageHeader title="Portfolio" subtitle="Simulated trades, managed by stop, targets and a trailing stop, with exposure and outcome attribution. Prices refresh every 10 seconds." right={<div className="flex items-center gap-2"><SourceBadge source={loaded?.source} note={loaded?.note} loading={loading} /><button onClick={refresh} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Refresh</button></div>} />
       <DataBanner source={loaded?.source} note={loaded?.note} onRetry={refresh} />
       <SafetyNote>These are simulated positions. Nothing here is sent to a broker, and no real order exists.</SafetyNote>
 
@@ -30,6 +31,8 @@ export default function PositionsPage() {
         <Stat title="Realised P&L" value={inr(realized)} tone={realized > 0 ? "up" : realized < 0 ? "down" : "flat"} sub="Partial and final exits" />
         <Stat title="Exposure" value={inr(exposure)} sub="Open quantity × last price" />
       </div>
+
+      <PortfolioPanels />
 
       <div className="flex flex-wrap gap-2">
         {FILTERS.map(([k, l]) => <button key={k} onClick={() => setFilter(k)} className={cn("rounded-full border px-3.5 py-1.5 text-xs font-medium transition", filter === k ? "border-royal-600 bg-royal-600 text-white shadow-hero" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300")}>{l}{k !== "ALL" && <span className="ml-1.5 opacity-70">{all.filter((p) => p.state === k).length}</span>}</button>)}

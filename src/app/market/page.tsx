@@ -6,6 +6,8 @@ import { Chip, Dot, Empty, PageHeader, Pnl, Skeleton, SourceBadge, card } from "
 import { duration, px, signed } from "@/services/trading";
 import { getMarketSnapshot, getSourceHealth } from "@/services/system";
 import type { SourceStatus } from "@/types/trading";
+import { CalendarPanel, NewsPanel } from "@/components/trading/Panels";
+import { RegimeWidget } from "@/components/trading/Widgets";
 import { cn } from "@/lib/utils";
 
 const kb = (b: number): string => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1)} MB` : b >= 1000 ? `${Math.round(b / 1000)} kB` : `${b} B`);
@@ -73,6 +75,7 @@ export default function MarketPage() {
                 <div className="text-right text-xs text-slate-500">{p.present ? <><p>{p.count ?? 0} item{p.count === 1 ? "" : "s"}</p><p className="text-slate-400">{p.ageSeconds === null ? "" : `${duration(p.ageSeconds)} old`}</p></> : <span className="text-slate-400">—</span>}</div>
               </li>))}</ul>
           </section>
+          <div className="grid gap-4 lg:grid-cols-3"><RegimeWidget /><CalendarPanel /><NewsPanel /></div>
         </>
       )}
     </div>

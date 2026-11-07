@@ -11,7 +11,6 @@ const nextConfig = {
   // pages that showed sample data were removed; their routes now lead to the real equivalent
   async redirects() {
     return [
-      { source: "/decisions", destination: "/approvals", permanent: false },
       { source: "/activity", destination: "/notifications", permanent: false },
       { source: "/snapshots", destination: "/market", permanent: false },
     ];
