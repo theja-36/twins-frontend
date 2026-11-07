@@ -7,7 +7,7 @@ import { duration, px, signed } from "@/services/trading";
 import { getMarketSnapshot, getSourceHealth } from "@/services/system";
 import type { SourceStatus } from "@/types/trading";
 import { CalendarPanel, NewsPanel } from "@/components/trading/Panels";
-import { RegimeWidget } from "@/components/trading/Widgets";
+import { MarketHoursWidget, RegimeWidget } from "@/components/trading/Widgets";
 import { cn } from "@/lib/utils";
 
 const kb = (b: number): string => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1)} MB` : b >= 1000 ? `${Math.round(b / 1000)} kB` : `${b} B`);
@@ -48,8 +48,8 @@ export default function MarketPage() {
           <section className={cn(card, "overflow-hidden")}>
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-4"><div><h2 className="text-base font-semibold text-ink">Snapshot generation</h2><p className="mt-0.5 text-xs text-slate-500">Published by the feed as one all-or-nothing set. {m.quoteCount} quotes, {m.optionQuoteCount} option quotes.</p></div>
               <span className="inline-flex items-center gap-2 text-sm"><Dot tone={m.generation?.status === "complete" ? "ok" : m.visible ? "warn" : "off"} /><b className="text-ink">{m.generation ? m.generation.status : "none"}</b>{m.generation?.id && <span className="font-mono text-xs text-slate-400">{m.generation.id}</span>}</span></div>
-            <table className="w-full text-sm"><thead><tr className="text-left text-[11px] font-mono uppercase tracking-wider text-slate-500"><th className="px-5 py-3">File</th><th className="px-5 py-3">Present</th><th className="px-5 py-3 text-right">Size</th><th className="px-5 py-3 text-right">Age</th></tr></thead>
-              <tbody>{m.files.map((f) => (<tr key={f.kind} className="border-t border-slate-50"><td className="px-5 py-3 font-mono text-[13px] text-ink">{f.kind}</td><td className="px-5 py-3"><Dot tone={f.present ? "ok" : "off"} /> <span className="text-slate-500">{f.present ? "yes" : "missing"}</span></td><td className="px-5 py-3 text-right font-mono text-slate-500">{f.present ? kb(f.bytes) : "—"}</td><td className="px-5 py-3 text-right font-mono text-slate-500">{f.ageSeconds === null ? "—" : duration(f.ageSeconds)}</td></tr>))}</tbody></table>
+            <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-sm"><thead><tr className="text-left text-[11px] font-mono uppercase tracking-wider text-slate-500"><th className="px-5 py-3">File</th><th className="px-5 py-3">Present</th><th className="px-5 py-3 text-right">Size</th><th className="px-5 py-3 text-right">Age</th></tr></thead>
+              <tbody>{m.files.map((f) => (<tr key={f.kind} className="border-t border-slate-50"><td className="px-5 py-3 font-mono text-[13px] text-ink">{f.kind}</td><td className="px-5 py-3"><Dot tone={f.present ? "ok" : "off"} /> <span className="text-slate-500">{f.present ? "yes" : "missing"}</span></td><td className="px-5 py-3 text-right font-mono text-slate-500">{f.present ? kb(f.bytes) : "—"}</td><td className="px-5 py-3 text-right font-mono text-slate-500">{f.ageSeconds === null ? "—" : duration(f.ageSeconds)}</td></tr>))}</tbody></table></div>
           </section>
 
           <section className={cn(card, "overflow-hidden")}>
@@ -75,7 +75,7 @@ export default function MarketPage() {
                 <div className="text-right text-xs text-slate-500">{p.present ? <><p>{p.count ?? 0} item{p.count === 1 ? "" : "s"}</p><p className="text-slate-400">{p.ageSeconds === null ? "" : `${duration(p.ageSeconds)} old`}</p></> : <span className="text-slate-400">—</span>}</div>
               </li>))}</ul>
           </section>
-          <div className="grid gap-4 lg:grid-cols-3"><RegimeWidget /><CalendarPanel /><NewsPanel /></div>
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4"><MarketHoursWidget /><RegimeWidget /><CalendarPanel /><NewsPanel /></div>
         </>
       )}
     </div>
