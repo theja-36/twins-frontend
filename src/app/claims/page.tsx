@@ -63,7 +63,7 @@ export default function ClaimsPage() {
 
         <section className={cn(card, "overflow-hidden")}>
           {shown.length === 0 ? <div className="p-5"><Empty title="No claims match" hint={rows.length === 0 ? "No message has named a contract yet." : "Relax a filter or press Reset."} /></div> : (
-            <div className="overflow-x-auto"><table className="w-full min-w-[820px] text-sm">
+            <div className="tbl-scroll"><table className="w-full min-w-[820px] text-sm">
               <thead><tr className="text-left text-[11px] font-mono uppercase tracking-wider text-slate-500"><th className="px-5 py-3">Contract</th><th className="px-3 py-3">Action</th><th className="px-3 py-3">Entry</th><th className="px-3 py-3">Stop</th><th className="px-3 py-3">Targets</th><th className="px-3 py-3">Expiry</th><th className="px-3 py-3">Age</th></tr></thead>
               <tbody>{shown.map((r) => { const c = r.claim, sq = stopQuality(c); return (
                 <tr key={r.id} tabIndex={0} onClick={() => setOpen(r)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(r); } }} aria-label={`Open details for ${claimTitle(c)}`}

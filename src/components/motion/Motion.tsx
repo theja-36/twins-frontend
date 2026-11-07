@@ -62,3 +62,15 @@ export function DrawIn({ children, className }: { children: React.ReactNode; cla
   const reduce = useReducedMotion();
   return <motion.div className={className} initial={reduce ? false : { clipPath: "inset(0 100% 0 0)" }} animate={{ clipPath: "inset(0 0% 0 0)" }} transition={{ duration: 0.9, ease: "easeOut" }}>{children}</motion.div>;
 }
+
+/** Tiny line chart (no axes). Draws in once; static under reduced motion. `path` comes from `sparkPath`. */
+export function Sparkline({ path, tone = "up", width = 160, height = 40, label }: { path: string; tone?: "up" | "down" | "flat"; width?: number; height?: number; label: string }) {
+  const reduce = useReducedMotion();
+  const stroke = tone === "down" ? "#FF4757" : tone === "up" ? "#00D4AA" : "#8E9BB5";
+  if (!path) return <div className="font-mono text-[11px] text-slate-400" style={{ width, height, lineHeight: `${height}px` }}>no data</div>;
+  return (
+    <svg role="img" aria-label={label} width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+      <motion.path d={path} fill="none" stroke={stroke} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" initial={reduce ? false : { pathLength: 0, opacity: 0.4 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 0.9, ease: "easeOut" }} />
+    </svg>
+  );
+}

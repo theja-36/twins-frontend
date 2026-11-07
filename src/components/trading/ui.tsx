@@ -4,7 +4,7 @@ import type { TradeOutcome } from "@/types/trading";
 import { ERROR_TEXT, requestRetry, useBackendState } from "@/services/backendState";
 
 const label = "text-[11px] font-mono uppercase tracking-wider text-slate-500";
-export const card = "rounded-2xl border border-slate-200/80 bg-white shadow-card";
+export const card = "rounded-lg border border-slate-200/80 bg-white transition-colors duration-150";
 
 export function PageHeader({ title, subtitle, right }: { title: string; subtitle: string; right?: React.ReactNode }) {
   return (

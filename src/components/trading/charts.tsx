@@ -8,9 +8,9 @@ import type { CurvePoint } from "@/lib/portfolio";
 /** Recharts wrappers in the design system's colours. Every chart names its meaning in `aria-label`; `isAnimationActive` follows prefers-reduced-motion. */
 const AXIS = { fontSize: 11, fill: "#8E9BB5" } as const;
 const GRID = "rgba(142,155,181,0.18)";
-const BLUE = "#3B82F6", GREEN = "#22C55E", RED = "#EF4444";
+const BLUE = "#00D4AA", GREEN = "#00D4AA", RED = "#FF4757";
 
-const tip = { contentStyle: { background: "#11161F", border: "1px solid #262E3E", borderRadius: 12, color: "#E8ECF4", fontSize: 12 }, labelStyle: { color: "#AAB5CA" }, cursor: { stroke: "#3B82F6", strokeOpacity: 0.3 } } as const;
+const tip = { contentStyle: { background: "#10131A", border: "1px solid #232A36", borderRadius: 8, color: "#E8ECF4", fontSize: 12 }, labelStyle: { color: "#AAB5CA" }, cursor: { stroke: "#00D4AA", strokeOpacity: 0.3 } } as const;
 
 export function EquityAreaChart({ curve, height = 220, metric = "pnl" }: { curve: readonly CurvePoint[]; height?: number; metric?: "pnl" | "r" }) {
   const reduce = useReducedMotion();
@@ -42,7 +42,7 @@ export function ShareBars({ rows, height = 200, label }: { rows: ReadonlyArray<{
           <CartesianGrid stroke={GRID} horizontal={false} />
           <XAxis type="number" tick={AXIS} tickLine={false} axisLine={false} />
           <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={84} />
-          <Tooltip {...tip} cursor={{ fill: "rgba(59,130,246,0.08)" }} />
+          <Tooltip {...tip} cursor={{ fill: "rgba(0,212,170,0.08)" }} />
           <Bar dataKey="value" radius={[0, 6, 6, 0]} isAnimationActive={!reduce} animationDuration={700}>
             {rows.map((r) => <Cell key={r.name} fill={r.tone === "down" ? RED : r.tone === "up" ? GREEN : BLUE} />)}
           </Bar>
