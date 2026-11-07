@@ -20,18 +20,18 @@ export function ConfigView() {
   const p = c.paperTrading, e = c.agentEngine;
   const kill = controlOf(c.runtimeControls, "killSwitchActive"), intake = controlOf(c.runtimeControls, "intakeEnabled"), trading = controlOf(c.runtimeControls, "tradingEnabled");
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-500">Read-only. Settings are changed on the server; this page only shows them. Source: {c.source}.</p><SourceBadge source={loaded?.source} note={loaded?.note} loading={loading} /></div>
       <DataBanner source={loaded?.source} note={loaded?.note} onRetry={refresh} />
 
-      <Section title="Safety posture" hint="The switches that decide whether anything real can happen.">
+      <Section id="safety" title="Safety posture" hint="The switches that decide whether anything real can happen.">
         <KV rows={[
           ["Environment", `${c.environment.appEnv ?? "—"} · mode ${c.environment.tradingMode ?? "—"}`], ["Live trading", <span key="l" className="inline-flex items-center gap-2"><Dot tone="ok" />Locked (cannot be enabled)</span>], ["Broker orders", <span key="b" className="inline-flex items-center gap-2"><Dot tone="ok" />None exist</span>],
           ["Live-trading guard", yn(c.environment.liveTradingGuardPasses, "Passing", "FAILING")], ["Kill switch", kill === undefined ? <span key="k" className="inline-flex items-center gap-2"><Dot tone="warn" />unreadable</span> : yn(!kill, "Clear", "ACTIVE")], ["Intake", intake === undefined ? "unreadable" : yn(intake, "On", "Off")], ["Trading control", trading === undefined ? "unreadable" : yn(trading, "On", "Off")],
         ]} />
       </Section>
 
-      <Section title="Paper trading: ready to switch on?" hint="A live checklist. It turns nothing on; switching on is two separate actions of yours (arm on the host, then flip the audited switch).">
+      <Section id="readiness" title="Paper trading: ready to switch on?" hint="A live checklist. It turns nothing on; switching on is two separate actions of yours (arm on the host, then flip the audited switch).">
         {!ready ? <Skeleton h={120} /> : (
           <>
             <p className={`mb-3 rounded-lg px-3 py-2 text-sm font-medium ${ready.enabledNow ? "bg-amber-50 text-amber-900" : ready.readyToEnable ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}`}>
@@ -46,7 +46,7 @@ export function ConfigView() {
         )}
       </Section>
 
-      <Section title="Paper trading" hint="Simulation only. It runs only when BOTH keys are on.">
+      <Section id="paper" title="Paper trading" hint="Simulation only. It runs only when BOTH keys are on.">
         <KV rows={[
           ["Running now", yn(p.effective, "Yes", "No")], ["Key 1: armed by the host", yn(p.armedByHost, "Armed", "Not armed")], ["Key 2: audited switch", p.switch ? <span key="s" className="inline-flex flex-wrap items-center gap-2">{yn(p.switch.enabled, "ON", "OFF")}<span className="text-xs font-normal text-slate-400">v{p.switch.version} · {p.switch.changedBy} · {ago(p.switch.changedAt)}</span></span> : "unreadable"],
           ...(p.config ? ([
@@ -56,13 +56,13 @@ export function ConfigView() {
         ]} />
       </Section>
 
-      <Section title="Research agent engine">
+      <Section id="engine" title="Research agent engine">
         {!e.valid ? <p className="text-sm text-rose-600">The engine configuration is invalid on the server.</p> : (
           <KV rows={[["Enforcing mode", yn(e.enabled, "On", "Off")], ["Shadow mode", yn(e.shadow, "On (evaluate and log only)", "Off")], ["Required agents", String(e.requiredAgents?.length ?? 0)], ["Disabled agents", e.disabledAgents?.length ? e.disabledAgents.join(", ") : "none"], ["Halts the flow on", e.haltOn?.map((h) => h.replace("RESEARCH_", "").toLowerCase()).join(", ") || "nothing"], ["Parallel agents", String(e.maxConcurrency ?? "—")], ...Object.entries(e.thresholds ?? {}).map(([k, v]) => [`Threshold: ${pretty(k)}`, String(v)] as [string, React.ReactNode])]} />
         )}
       </Section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div id="risk" className="grid scroll-mt-20 gap-4 lg:grid-cols-2">
         {([["Position sizing", "sizing"], ["Portfolio limits", "portfolio"], ["Circuit breakers", "circuitBreakers"], ["Decision expiry", "expiry"]] as const).map(([title, key]) => {
           const r = c.risk[key];
           return <Section key={key} title={title}>{r.valid === false ? <p className="text-sm text-rose-600">Invalid on the server.</p> : <KV rows={Object.entries(r).filter(([k]) => k !== "valid").map(([k, v]) => [pretty(k), fmt(v)] as [string, React.ReactNode])} />}</Section>;

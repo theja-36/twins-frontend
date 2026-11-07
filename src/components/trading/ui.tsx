@@ -117,9 +117,9 @@ export function Bar({ value, max, tone }: { value: number; max: number; tone: "u
 
 /** Kept so pages compile; the connection problem is shown once, by the global banner in the app shell. */
 export function DataBanner(_props: { source?: unknown; note?: string; onRetry?: () => void }) { return null; }
-export function Section({ title, hint, children, right }: { title: string; hint?: string; children: React.ReactNode; right?: React.ReactNode }) {
+export function Section({ title, hint, children, right, id }: { title: string; hint?: string; children: React.ReactNode; right?: React.ReactNode; id?: string }) {
   return (
-    <section className={cn(card, "p-5 sm:p-6")}>
+    <section id={id} className={cn(card, "scroll-mt-20 p-4 sm:p-5")}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2"><div><h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>{hint && <p className="mt-0.5 text-xs text-slate-500">{hint}</p>}</div>{right}</div>
       {children}
     </section>
