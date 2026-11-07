@@ -1,0 +1,190 @@
+<title>TWINS Channel and Approval Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one shell with two screens (Channels + feed, Approval card). Palette follows the TWINS frontend: royal blue primary, acid-lime accent, slate ink. */
+:root {
+  --bg: #F4F6F8; --surface: #FFFFFF; --subtle: #ECEFF2; --line: #E2E8F0;
+  --ink: #0A0E17; --ink2: #475569; --ink3: #7B8AA0;
+  --royal: #2563EB; --royal-soft: #EFF6FF; --royal-ink: #1E40AF;
+  --acid: #84CC16; --acid-soft: #ECFCCB; --acid-ink: #3F6212;
+  --warn: #B45309; --warn-soft: #FEF3C7; --bad: #BE123C; --bad-soft: #FFE4E6; --ok: #15803D; --ok-soft: #DCFCE7;
+  --sans: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0B1020; --surface: #121A2E; --subtle: #1A2440; --line: #26324F;
+  --ink: #E8EEF9; --ink2: #A9B6CE; --ink3: #7C8BA8;
+  --royal: #6EA0FF; --royal-soft: #16254A; --royal-ink: #A9C6FF;
+  --acid: #A3E635; --acid-soft: #26330F; --acid-ink: #C8F27A;
+  --warn: #FBBF24; --warn-soft: #3A2A0A; --bad: #FB7185; --bad-soft: #3B1220; --ok: #4ADE80; --ok-soft: #0F2E1C; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0B1020; --surface: #121A2E; --subtle: #1A2440; --line: #26324F;
+  --ink: #E8EEF9; --ink2: #A9B6CE; --ink3: #7C8BA8;
+  --royal: #6EA0FF; --royal-soft: #16254A; --royal-ink: #A9C6FF;
+  --acid: #A3E635; --acid-soft: #26330F; --acid-ink: #C8F27A;
+  --warn: #FBBF24; --warn-soft: #3A2A0A; --bad: #FB7185; --bad-soft: #3B1220; --ok: #4ADE80; --ok-soft: #0F2E1C; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 18px; }
+.banner { background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn); border-radius: 10px; padding: 8px 12px; font-size: 12.5px; font-weight: 500; }
+header.top { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+.sub { color: var(--ink2); font-size: 13px; margin: 2px 0 0; }
+nav.tabs { display: inline-flex; background: var(--subtle); border-radius: 10px; padding: 3px; gap: 2px; }
+nav.tabs a { padding: 7px 14px; border-radius: 8px; color: var(--ink2); text-decoration: none; font-weight: 500; font-size: 13px; }
+nav.tabs a[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(10,14,23,.12); }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--royal); outline-offset: 2px; }
+.screen[hidden] { display: none; }
+.grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.panel h2 { font-size: 13px; font-weight: 600; margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 8px; align-items: center; letter-spacing: .01em; }
+.panel h2 small { color: var(--ink3); font-weight: 400; font-size: 12px; }
+.chan { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.chan:last-child { border-bottom: 0; }
+.chan input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--royal); }
+.chan b { font-weight: 600; display: block; }
+.mono { font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink3); }
+.stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; font-size: 12px; color: var(--ink2); }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
+.pill.royal { background: var(--royal-soft); color: var(--royal-ink); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.mute { background: var(--subtle); color: var(--ink2); }
+.pill.acid { background: var(--acid-soft); color: var(--acid-ink); }
+.note { padding: 12px 16px; background: var(--subtle); font-size: 12.5px; color: var(--ink2); }
+.note code, .cfg { font-family: var(--mono); font-size: 12px; }
+.cfg { display: block; margin-top: 8px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; white-space: nowrap; color: var(--ink); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.toolbar label { display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--ink2); }
+.feed { list-style: none; margin: 0; padding: 0; }
+.feed li { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 8px; }
+.feed li:last-child { border-bottom: 0; }
+.row1 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.contract { font-weight: 600; font-size: 15px; }
+.levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.lv { background: var(--subtle); border-radius: 8px; padding: 6px 10px; }
+.lv span { display: block; font-size: 11px; color: var(--ink3); text-transform: uppercase; letter-spacing: .06em; }
+.lv b { font-family: var(--mono); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.empty { padding: 28px 16px; text-align: center; color: var(--ink3); }
+.foot { font-size: 12px; color: var(--ink3); }
+/* approval card */
+.card { max-width: 760px; margin: 0 auto; width: 100%; }
+.card header { padding: 16px; border-bottom: 1px solid var(--line); display: grid; gap: 8px; }
+.card h3 { margin: 0; font-size: 17px; font-weight: 600; }
+.sec { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.sec h4 { margin: 0; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); font-weight: 600; }
+.agents { width: 100%; border-collapse: collapse; font-size: 13px; }
+.agents th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink3); font-weight: 600; padding: 4px 8px 4px 0; }
+.agents td { padding: 7px 8px 7px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.scroll { overflow-x: auto; }
+.bar { height: 8px; border-radius: 99px; background: var(--subtle); overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; }
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.kv div span { display: block; font-size: 11px; color: var(--ink3); }
+.kv div b { font-family: var(--mono); font-weight: 500; font-size: 14px; }
+.actions { padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--subtle); }
+button.btn { font: inherit; font-weight: 600; padding: 9px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+button.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.help { font-size: 12.5px; color: var(--ink2); flex: 1 1 260px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <div class="banner">DESIGN MOCKUP. Every name, number and message below is invented sample data. Nothing here is connected to TWINS.</div>
+  <header class="top">
+    <div><h1>TWINS channels and approval card</h1><p class="sub">Phase 2 (channel select and signal feed) and Phase 4 (approval card). Read-only by design.</p></div>
+    <nav class="tabs" aria-label="Mockup screens"><a href="#channels" id="tab-channels">Channels and feed</a><a href="#approval" id="tab-approval">Approval card</a></nav>
+  </header>
+
+  <section class="screen" id="screen-channels" aria-labelledby="tab-channels">
+    <div class="grid">
+      <div class="panel">
+        <h2>Channels <small>3 captured</small></h2>
+        <label class="chan"><input type="checkbox" id="ch-a" data-chan="A" checked><span><b>Channel A</b><span class="mono muted">id …2544</span><span class="stats"><span>109 messages</span><span>45 signals</span><span>last 2 h ago</span></span></span><span class="pill acid">premium stops</span></label>
+        <label class="chan"><input type="checkbox" id="ch-b" data-chan="B" checked><span><b>Channel B</b><span class="mono muted">id …2041</span><span class="stats"><span>12 messages</span><span>12 signals</span><span>last 1 d ago</span></span></span><span class="pill royal">states premium</span></label>
+        <label class="chan"><input type="checkbox" id="ch-c" data-chan="C"><span><b>Channel C</b><span class="mono muted">id …7710</span><span class="stats"><span>4 messages</span><span>0 signals</span><span>last 6 d ago</span></span></span><span class="pill mute">quiet</span></label>
+        <div class="note">Ticking a channel changes what this page shows, nothing else. Which channels TWINS reads is a host setting that this page cannot change.
+          <span class="cfg" id="cfg">TWINS_TELEGRAM_ALLOWED_CHAT_IDS=…2544,…2041</span>
+          <span class="foot">Copy this line to the host settings and restart the capture service to change what is ingested.</span></div>
+      </div>
+      <div class="panel">
+        <h2>Signal feed <small id="count">3 shown</small></h2>
+        <div class="toolbar"><span class="foot">Newest first. Claims are unverified until contract and premium data are available.</span><label><input type="checkbox" id="show-reports"> Show result reports (hidden by default)</label></div>
+        <ul class="feed" id="feed">
+          <li data-chan="A" data-kind="signal"><div class="row1"><span class="contract">SENSEX 80000 CE <span class="muted" style="font-weight:400">12 Nov</span></span><span class="pill warn">Waiting for contract data</span></div>
+            <div class="levels"><div class="lv"><span>Entry</span><b>above 300</b></div><div class="lv"><span>Stop</span><b>250 premium *</b></div><div class="lv"><span>Targets</span><b>350 / 400</b></div></div>
+            <div class="foot">Channel A, 2 h ago. * Premium basis applied from the channel's default, because the message did not say. The stop is 0.31% of the strike.</div></li>
+          <li data-chan="B" data-kind="signal"><div class="row1"><span class="contract">NIFTY 24500 PE <span class="muted" style="font-weight:400">no expiry given</span></span><span class="pill bad">Cannot size: expiry missing</span></div>
+            <div class="levels"><div class="lv"><span>Entry</span><b>@ 120</b></div><div class="lv"><span>Stop</span><b>90 premium</b></div><div class="lv"><span>Targets</span><b>150 / 180 / 210</b></div></div>
+            <div class="foot">Channel B, 1 d ago. The message states "premium".</div></li>
+          <li data-chan="A" data-kind="signal"><div class="row1"><span class="contract">BANKNIFTY 52000 CE <span class="muted" style="font-weight:400">no expiry given</span></span><span class="pill bad">Stop missing</span></div>
+            <div class="levels"><div class="lv"><span>Entry</span><b>@ 410</b></div><div class="lv"><span>Stop</span><b>none</b></div><div class="lv"><span>Targets</span><b>450</b></div></div>
+            <div class="foot">Channel A, 1 d ago. A signal without a stop is never sized.</div></li>
+          <li data-chan="A" data-kind="report" hidden><div class="row1"><span class="contract">Result report</span><span class="pill mute">Not a signal</span></div>
+            <div class="foot">Channel A, 3 h ago. A message about targets already reached. It creates no decision and is kept out of the history used for scoring.</div></li>
+        </ul>
+        <div class="empty" id="empty" hidden>No channel selected. Tick at least one channel to see its signals.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-approval" aria-labelledby="tab-approval" hidden>
+    <div class="panel card">
+      <header>
+        <div class="row1"><h3>SENSEX 80000 CE · 12 Nov</h3><span class="pill warn">Research: caution</span></div>
+        <div class="stats"><span>Decision v3</span><span>from Channel A</span><span>received 2 h ago</span><span class="pill mute">Source trust: unknown</span></div>
+      </header>
+      <div class="sec"><h4>Levels</h4>
+        <div class="levels"><div class="lv"><span>Entry</span><b>above 300</b></div><div class="lv"><span>Stop (premium)</span><b>250</b></div><div class="lv"><span>Targets</span><b>350 / 400</b></div><div class="lv"><span>Reward to risk</span><b>1.0 : 1</b></div></div></div>
+      <div class="sec"><h4>Size proposed</h4>
+        <div class="kv"><div><span>Quantity</span><b>20</b></div><div><span>Largest loss</span><b>₹1,000</b></div><div><span>Share of capital</span><b>1.0%</b></div><div><span>Reduce-only check</span><b>would lower to 12</b></div></div>
+        <span class="foot">The reduce-only check can only make a position smaller. It is shown for information and is not applied.</span></div>
+      <div class="sec"><h4>What the agents said</h4>
+        <div class="bar" role="img" aria-label="Weight for 38 percent, against 27 percent, neutral 35 percent"><i style="width:38%; background: var(--ok)"></i><i style="width:35%; background: var(--line)"></i><i style="width:27%; background: var(--bad)"></i></div>
+        <div class="stats"><span><b style="color:var(--ok)">For</b> 38%</span><span><b>Neutral</b> 35%</span><span><b style="color:var(--bad)">Against</b> 27%</span><span class="pill warn">Split view</span></div>
+        <div class="scroll"><table class="agents"><thead><tr><th>Agent</th><th>View</th><th>Reasons</th></tr></thead><tbody>
+          <tr><td>Signal integrity</td><td><span class="pill ok">Supportive</span></td><td class="mono">LEVELS_COMPLETE</td></tr>
+          <tr><td>Options risk</td><td><span class="pill warn">Caution</span></td><td class="mono">GREEKS_UNAVAILABLE</td></tr>
+          <tr><td>Market and events</td><td><span class="pill bad">Against</span></td><td class="mono">EVENT_WITHIN_4H</td></tr>
+          <tr><td>News and sentiment</td><td><span class="pill mute">No result</span></td><td class="mono">SOURCE_UNAVAILABLE</td></tr></tbody></table></div>
+        <span class="foot">Close call: removing "Market and events" would change the result to supportive.</span></div>
+      <div class="sec"><h4>Data behind it</h4>
+        <div class="stats"><span class="pill ok">Calendar OK</span><span class="pill ok">Macro OK</span><span class="pill ok">Quotes OK</span><span class="pill warn">News stale</span><span class="pill mute">Sentiment missing</span></div></div>
+      <div class="sec"><h4>Blocking this</h4><div class="stats"><span class="pill bad">Contract not verified</span><span class="pill bad">Option premium data unavailable</span></div></div>
+      <div class="actions">
+        <button class="btn" disabled>Reject</button><button class="btn" disabled>Approve for review</button>
+        <span class="help">Approval is not available on this page. Approvals are made in the Telegram approval bot, which re-checks every gate. A web approval button needs its own safety review before it is built.</span>
+      </div>
+    </div>
+  </section>
+  <p class="foot">Mockup for discussion. Figures, names and states are invented to show layout and wording.</p>
+</div>
+
+<script>
+(function () {
+  var screens = { channels: document.getElementById("screen-channels"), approval: document.getElementById("screen-approval") };
+  var tabs = { channels: document.getElementById("tab-channels"), approval: document.getElementById("tab-approval") };
+  function route() {
+    var h = (location.hash || "#channels").slice(1); if (!screens[h]) h = "channels";
+    Object.keys(screens).forEach(function (k) { screens[k].hidden = k !== h; if (k === h) tabs[k].setAttribute("aria-current", "page"); else tabs[k].removeAttribute("aria-current"); });
+  }
+  window.addEventListener("hashchange", route); route();
+  var boxes = Array.prototype.slice.call(document.querySelectorAll("input[data-chan]"));
+  var rep = document.getElementById("show-reports");
+  var items = Array.prototype.slice.call(document.querySelectorAll("#feed li"));
+  function update() {
+    var on = {}; var ids = [];
+    boxes.forEach(function (b) { if (b.checked) { on[b.getAttribute("data-chan")] = true; ids.push(b.getAttribute("data-chan") === "A" ? "…2544" : b.getAttribute("data-chan") === "B" ? "…2041" : "…7710"); } });
+    var shown = 0;
+    items.forEach(function (li) { var ok = on[li.getAttribute("data-chan")] && (li.getAttribute("data-kind") !== "report" || rep.checked); li.hidden = !ok; if (ok) shown++; });
+    document.getElementById("count").textContent = shown + " shown";
+    document.getElementById("empty").hidden = shown !== 0;
+    document.getElementById("cfg").textContent = "TWINS_TELEGRAM_ALLOWED_CHAT_IDS=" + (ids.join(",") || "(none)");
+  }
+  boxes.concat([rep]).forEach(function (b) { b.addEventListener("change", update); });
+  update();
+})();
+</script>
