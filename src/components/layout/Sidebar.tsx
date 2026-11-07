@@ -21,6 +21,8 @@ import {
   History,
   Bot,
   Bell,
+  Table2,
+  FileCheck2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLoaded } from "@/components/trading/hooks";
@@ -48,10 +50,12 @@ const navGroups: NavGroup[] = [
   {
     label: "Trading",
     items: [
-      { name: "Overview", href: "/", icon: LayoutDashboard },
+      { name: "Dashboard", href: "/", icon: LayoutDashboard },
       { name: "Signals", href: "/signals", icon: Radar },
+      { name: "Claims", href: "/claims", icon: Table2 },
+      { name: "Decisions", href: "/decisions", icon: FileCheck2 },
       { name: "Approvals", href: "/approvals", icon: ClipboardCheck, badge: "Human", badgeStyle: "acid" },
-      { name: "Positions", href: "/positions", icon: Briefcase, badge: "Paper", badgeStyle: "royal" },
+      { name: "Portfolio", href: "/positions", icon: Briefcase, badge: "Paper", badgeStyle: "royal" },
       { name: "P&L", href: "/pnl", icon: LineChart },
       { name: "History", href: "/history", icon: History },
     ],

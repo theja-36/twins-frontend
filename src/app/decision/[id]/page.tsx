@@ -4,6 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Chip, Dot, Empty, KV, PageHeader, SafetyNote, Skeleton, card } from "@/components/trading/ui";
+import { motion, useReducedMotion } from "framer-motion";
+import { Copy, Send } from "lucide-react";
+import { Stagger, StaggerItem } from "@/components/motion/Motion";
+import { Tip } from "@/components/motion/Controls";
+import { useToast } from "@/components/motion/Toast";
 import { BackendError, reportError, reportOk } from "@/services/backendState";
 import { inr, px } from "@/services/trading";
 import type { DecisionCardData, DecisionSummary } from "@/types/trading";
@@ -80,6 +85,7 @@ export default function DecisionPage() {
 }
 
 function CardView({ c }: { c: DecisionCardData }) {
+  const reduce = useReducedMotion();
   const total = c.agents.filter((a) => a.scored).reduce((s, a) => s + a.weight * ((a.confidence ?? 0) / 100), 0);
   const side = (v: string): "for" | "against" | "neutral" => (v === "SUPPORTIVE" ? "for" : v === "NEUTRAL" ? "neutral" : "against");
   const share = (k: "for" | "against" | "neutral"): number => (total === 0 ? 0 : (c.agents.filter((a) => a.scored && side(a.verdict) === k).reduce((s, a) => s + a.weight * ((a.confidence ?? 0) / 100), 0) / total) * 100);
@@ -93,7 +99,7 @@ function CardView({ c }: { c: DecisionCardData }) {
         <p className="mt-1 text-sm text-slate-600">{c.headline.halts ? "The flow stops here: " : "The flow continues: "}{c.headline.haltReason || "no reason recorded"}</p>
         {total > 0 ? (
           <div className="mt-4" role="img" aria-label={`For ${share("for").toFixed(0)} percent, neutral ${share("neutral").toFixed(0)} percent, against ${share("against").toFixed(0)} percent`}>
-            <div className="flex h-2 overflow-hidden rounded-full bg-slate-100"><i style={{ width: `${share("for")}%` }} className="bg-emerald-500" /><i style={{ width: `${share("neutral")}%` }} className="bg-slate-300" /><i style={{ width: `${share("against")}%` }} className="bg-rose-500" /></div>
+            <div className="flex h-2 overflow-hidden rounded-full bg-slate-100">{([["for", "bg-emerald-500"], ["neutral", "bg-slate-300"], ["against", "bg-rose-500"]] as const).map(([k, cls]) => <motion.i key={k} className={cls} initial={reduce ? false : { width: 0 }} animate={{ width: `${share(k)}%` }} transition={{ duration: 0.7, ease: "easeOut" }} />)}</div>
             <p className="mt-1 text-xs text-slate-500">For {share("for").toFixed(0)}% · neutral {share("neutral").toFixed(0)}% · against {share("against").toFixed(0)}% (weight x confidence of scoring agents)</p>
           </div>
         ) : null}
@@ -147,11 +153,31 @@ function CardView({ c }: { c: DecisionCardData }) {
 
       {c.statements.length > 0 ? <section className={cn(card, "p-5")}><h2 className="text-base font-semibold text-ink">Read this as</h2><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">{c.statements.map((s) => <li key={s}>{s}</li>)}</ul></section> : null}
 
-      <section className={cn(card, "flex flex-wrap items-center gap-3 bg-slate-50 p-5")}>
-        <button type="button" disabled className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-400">Reject</button>
-        <button type="button" disabled className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-400">Approve for review</button>
-        <p className="min-w-[16rem] flex-1 text-xs text-slate-500">Approval is not available on this page. It is made in the Telegram approval bot after every gate is re-checked.</p>
-      </section>
+      <ActionsBar id={c.riskDecisionId} />
     </>
+  );
+}
+
+const BOT = process.env["NEXT_PUBLIC_TWINS_APPROVAL_BOT_URL"] ?? "";
+const BOT_OK = /^https:\/\/t\.me\/[A-Za-z0-9_]{5,32}$/.test(BOT);
+
+/** Approve / Reject stay disabled: approval is made in the Telegram bot (owner decision, Option A). The deep link is enabled only when the bot's address is configured at build time. */
+function ActionsBar({ id }: { id: string }) {
+  const { toast } = useToast();
+  const copy = async (): Promise<void> => {
+    try { await navigator.clipboard.writeText(id); toast("Decision id copied. Paste it in the approval bot if it asks for one.", "success"); } catch { toast("Could not copy. Select the id on the page instead.", "warn"); }
+  };
+  return (
+    <section className={cn(card, "flex flex-wrap items-center gap-3 bg-slate-50 p-5")} aria-label="Actions">
+      <Tip text="Approval is made in the Telegram approval bot after every gate is re-checked."><button type="button" disabled className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-400">Reject</button></Tip>
+      <Tip text="Approval is made in the Telegram approval bot after every gate is re-checked."><button type="button" disabled className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-400">Approve for review</button></Tip>
+      {BOT_OK ? (
+        <a href={BOT} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-royal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-royal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-royal-500"><Send className="h-4 w-4" aria-hidden />Open the approval bot in Telegram</a>
+      ) : (
+        <Tip text="The bot's address is not configured for this frontend (NEXT_PUBLIC_TWINS_APPROVAL_BOT_URL)."><button type="button" disabled className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-400"><Send className="h-4 w-4" aria-hidden />Open in Telegram</button></Tip>
+      )}
+      <button type="button" onClick={() => void copy()} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-royal-300 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-royal-500"><Copy className="h-4 w-4" aria-hidden />Copy decision id</button>
+      <p className="min-w-[16rem] flex-1 text-xs text-slate-500">Approval is not available on this page. It is made in the Telegram approval bot after every gate is re-checked.</p>
+    </section>
   );
 }

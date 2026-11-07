@@ -8,6 +8,8 @@ import { getIntakeStatus } from "@/services/system";
 import { useOptional } from "@/components/trading/useOptional";
 import { blockerText, entryText, expiryText, filterFeed, loadSelection, saveSelection, summarizeChannels } from "@/lib/channels";
 import type { TelegramChannel, TelegramClaim } from "@/types/trading";
+import { Pill, Tip, Toggle } from "@/components/motion/Controls";
+import { PulseDot, Stagger, StaggerItem } from "@/components/motion/Motion";
 import { cn } from "@/lib/utils";
 
 const STATUS_KIND: Record<string, string> = { COMPLETED: "WIN", PENDING: "PENDING", PROCESSING: "OPEN", FAILED: "LOSS", DEAD_LETTER: "REJECTED" };
@@ -29,11 +31,14 @@ export default function ChannelsPage() {
   };
   const reset = (): void => { setSelected(null); saveSelection(null); };
   const feed = filterFeed(recent, selected);
+  const [showReports, setShowReports] = React.useState(false);
+  const health = (iso: string | null): "ok" | "warn" | "off" => { if (!iso) return "off"; const h = (Date.now() - Date.parse(iso)) / 3_600_000; return h < 24 ? "ok" : h < 72 ? "warn" : "off"; };
 
   return (
     <div className="space-y-6">
       <PageHeader title="Channels" subtitle="The Telegram channels TWINS has captured from, and their recent messages. Message text is never shown. Choosing channels here only filters this page." right={<SourceBadge loading={loading} />} />
       <SafetyNote>Which channels TWINS captures is a host setting. This page cannot change it, and nothing here can place or approve anything.</SafetyNote>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2"><Toggle checked={showReports} onChange={setShowReports} label="Show result reports" disabledReason="Result reports are dropped at intake (parser v3), so none are stored to show." /></div>
       {!loaded ? <Skeleton h={220} /> : channels.length === 0 ? (
         <Empty title="No channels yet" hint="A channel appears here after the capture client has delivered a message from it." />
       ) : (
@@ -44,7 +49,7 @@ export default function ChannelsPage() {
               <li key={c.channel}>
                 <label className="flex cursor-pointer items-start gap-3 px-5 py-3.5">
                   <input type="checkbox" className="mt-1 h-4 w-4 accent-royal-600" checked={isOn(c.channel)} onChange={() => toggle(c.channel)} />
-                  <span className="min-w-0 flex-1"><span className="block font-mono text-[13px] text-ink">{c.channel}{detail.get(c.channel)?.name ? <span className="ml-2 font-sans text-xs text-slate-500">{detail.get(c.channel)?.name}</span> : null}</span><span className="block text-xs text-slate-500">{c.total} recent · {detail.get(c.channel) ? `${detail.get(c.channel)?.messages} stored · ${detail.get(c.channel)?.claims.claim} claims` : "totals need the newer backend"}{c.lastReceivedAt ? ` · last ${ago(c.lastReceivedAt)}` : ""}</span>{detail.get(c.channel)?.captureAllowed === false ? <span className="block text-xs text-amber-700">capture is not allowed for this channel</span> : null}</span>
+                  <span className="mt-1.5"><PulseDot tone={health(c.lastReceivedAt)} live={health(c.lastReceivedAt) === "ok"} label={`last message ${c.lastReceivedAt ? ago(c.lastReceivedAt) : "never"}`} /></span><span className="min-w-0 flex-1"><span className="block font-mono text-[13px] text-ink">{c.channel}{detail.get(c.channel)?.name ? <span className="ml-2 font-sans text-xs text-slate-500">{detail.get(c.channel)?.name}</span> : null}</span><span className="block text-xs text-slate-500">{c.total} recent · {detail.get(c.channel) ? `${detail.get(c.channel)?.messages} stored · ${detail.get(c.channel)?.claims.claim} claims` : "totals need the newer backend"}{c.lastReceivedAt ? ` · last ${ago(c.lastReceivedAt)}` : ""}</span><span className="mt-1 block"><Tip text="No scorecard exists for this channel yet, so its trust tier is unknown."><Pill tone="mute">trust: unknown</Pill></Tip></span>{detail.get(c.channel)?.captureAllowed === false ? <span className="block text-xs text-amber-700">capture is not allowed for this channel</span> : null}</span>
                 </label>
               </li>))}</ul>
           </section>
