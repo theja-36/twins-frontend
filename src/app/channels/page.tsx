@@ -5,7 +5,9 @@ import { useLoaded } from "@/components/trading/hooks";
 import { Chip, Empty, PageHeader, SafetyNote, Skeleton, SourceBadge, card } from "@/components/trading/ui";
 import { ago } from "@/services/trading";
 import { getIntakeStatus } from "@/services/system";
-import { filterFeed, loadSelection, saveSelection, summarizeChannels } from "@/lib/channels";
+import { useOptional } from "@/components/trading/useOptional";
+import { blockerText, entryText, expiryText, filterFeed, loadSelection, saveSelection, summarizeChannels } from "@/lib/channels";
+import type { TelegramChannel, TelegramClaim } from "@/types/trading";
 import { cn } from "@/lib/utils";
 
 const STATUS_KIND: Record<string, string> = { COMPLETED: "WIN", PENDING: "PENDING", PROCESSING: "OPEN", FAILED: "LOSS", DEAD_LETTER: "REJECTED" };
@@ -13,6 +15,8 @@ const fetchRecent = () => getIntakeStatus(100);
 
 export default function ChannelsPage() {
   const { loaded, loading } = useLoaded(fetchRecent, 20_000);
+  const chans = useOptional<{ channels: TelegramChannel[] }>("telegram/channels"), claimsRes = useOptional<{ claims: TelegramClaim[] }>("telegram/claims?limit=50");
+  const detail = new Map((chans.state === "ready" ? chans.data.channels : []).map((c) => [c.channel, c]));
   const recent = loaded?.data.recent ?? [];
   const channels = React.useMemo(() => summarizeChannels(recent), [recent]);
   const [selected, setSelected] = React.useState<Set<string> | null>(null);
@@ -40,7 +44,7 @@ export default function ChannelsPage() {
               <li key={c.channel}>
                 <label className="flex cursor-pointer items-start gap-3 px-5 py-3.5">
                   <input type="checkbox" className="mt-1 h-4 w-4 accent-royal-600" checked={isOn(c.channel)} onChange={() => toggle(c.channel)} />
-                  <span className="min-w-0 flex-1"><span className="block font-mono text-[13px] text-ink">{c.channel}</span><span className="block text-xs text-slate-500">{c.total} message{c.total === 1 ? "" : "s"}{c.lastReceivedAt ? ` · last ${ago(c.lastReceivedAt)}` : ""}</span></span>
+                  <span className="min-w-0 flex-1"><span className="block font-mono text-[13px] text-ink">{c.channel}{detail.get(c.channel)?.name ? <span className="ml-2 font-sans text-xs text-slate-500">{detail.get(c.channel)?.name}</span> : null}</span><span className="block text-xs text-slate-500">{c.total} recent · {detail.get(c.channel) ? `${detail.get(c.channel)?.messages} stored · ${detail.get(c.channel)?.claims.claim} claims` : "totals need the newer backend"}{c.lastReceivedAt ? ` · last ${ago(c.lastReceivedAt)}` : ""}</span>{detail.get(c.channel)?.captureAllowed === false ? <span className="block text-xs text-amber-700">capture is not allowed for this channel</span> : null}</span>
                 </label>
               </li>))}</ul>
           </section>
@@ -56,6 +60,34 @@ export default function ChannelsPage() {
           </section>
         </div>
       )}
+      <ClaimsPanel res={claimsRes} isOn={isOn} />
     </div>
+  );
+}
+
+function ClaimsPanel({ res, isOn }: { res: ReturnType<typeof useOptional<{ claims: TelegramClaim[] }>>; isOn: (c: string) => boolean }) {
+  if (res.state === "loading") return <Skeleton h={120} />;
+  if (res.state === "absent") return <Empty title="Parsed claims are not available yet" hint="This backend does not offer the claims view. It appears here after the backend is updated." />;
+  const rows = res.data.claims.filter((c) => isOn(c.channel));
+  return (
+    <section className={cn(card, "overflow-hidden")}>
+      <div className="border-b border-slate-100 px-5 py-4"><h2 className="text-base font-semibold text-ink">Parsed claims <span className="text-xs font-normal text-slate-400">{rows.length} shown</span></h2><p className="mt-0.5 text-xs text-slate-500">What the parser read from each message: contract, levels and what blocks it. The message text is never shown. A stop marked "premium (assumed)" took its basis from the channel's default.</p></div>
+      {rows.length === 0 ? <div className="p-5"><Empty title="No claims for the selected channels" hint="Choose more channels, or wait for a message that names a contract." /></div> : (
+        <ul className="divide-y divide-slate-50">{rows.map((r) => {
+          const c = r.claim;
+          return (
+            <li key={r.id} className="space-y-1.5 px-5 py-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold text-ink">{c ? `${c.underlying ?? "?"} ${c.strike ?? "?"} ${c.optionType ?? "?"}` : "Not a complete claim"}<span className="ml-2 text-xs font-normal text-slate-500">{c ? expiryText(c.expiry) : r.resultKind ?? ""}</span></span>
+                <span className="text-xs text-slate-500">{r.channel} · {r.ageSeconds === null ? "—" : ago(r.receivedAt)}</span>
+              </div>
+              {c ? (
+                <p className="font-mono text-xs text-slate-700">{c.action ?? "no action"} · entry {entryText(c.entry)} · stop {c.stopLoss ?? "none"}{c.stopLoss !== null ? ` (${c.levelBasis === "premium" ? (c.levelBasisInferred ? "premium (assumed)" : "premium") : c.levelBasis ?? "basis unclear"})` : ""} · targets {c.targets.length ? c.targets.join(" / ") : "none"}</p>
+              ) : null}
+              {r.blockers.length > 0 ? <div className="flex flex-wrap gap-1.5">{r.blockers.slice(0, 6).map((b) => <Chip key={b.code} kind="CANCELLED">{blockerText(b.code)}</Chip>)}</div> : null}
+            </li>);
+        })}</ul>
+      )}
+    </section>
   );
 }

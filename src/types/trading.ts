@@ -75,3 +75,12 @@ export interface DecisionCardData {
   statements: string[];
   grantsApproval: false;
 }
+
+/** Backend GET telegram/channels (masked identifiers, counts, no message content). Added after the Phase 2 backend deploy. */
+export interface TelegramChannel { id: string; channel: string; name: string | null; messages: number; revisions: number; claims: { claim: number; ambiguous: number; unsupported: number }; firstMessageAt: string | null; lastMessageAt: string | null; lastMessageAgeSeconds: number | null; captureAllowed: boolean | null }
+/** Backend GET telegram/claims: parsed fields only. */
+export interface TelegramClaim {
+  id: string; channel: string; receivedAt: string | null; ageSeconds: number | null; parserVersion: string; resultKind: "claim" | "ambiguous" | "unsupported" | null; assessmentOutcome: "INSUFFICIENT_EVIDENCE" | "REJECT" | null;
+  claim: { action: "buy" | "sell" | null; underlying: string | null; strike: number | null; optionType: "CE" | "PE" | null; entry: { type: string | null; price: number | null; low: number | null; high: number | null }; stopLoss: number | null; targets: number[]; levelBasis: string | null; levelBasisInferred: boolean; levelBasisConflict: boolean; expiry: { status: string | null; day: number | null; month: number | null; year: number | null } } | null;
+  blockers: Array<{ code: string; severity: string }>;
+}
