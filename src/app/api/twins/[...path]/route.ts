@@ -13,6 +13,7 @@ const ALLOWED: RegExp[] = [
   /^health$/,
   /^health\/status$/,
   /^risk\/decisions$/,
+  /^risk\/decisions\/[0-9a-f-]{36}\/(decision-card|summary|approval-eligibility)$/i,
   /^risk\/approvals$/,
   /^paper\/(status|summary|positions|outcomes|outcomes\/stats|readiness)$/,
   /^intake\/status$/,

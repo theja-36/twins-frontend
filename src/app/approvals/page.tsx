@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useLoaded } from "@/components/trading/hooks";
 import { Chip, DataBanner, Empty, LevelBar, PageHeader, SafetyNote, Skeleton, SourceBadge, card } from "@/components/trading/ui";
 import { ago, getApprovals, getDecisions, inr, px } from "@/services/trading";
@@ -56,7 +57,7 @@ function ApprovalCard({ d, approval }: { d: DecisionSummary; approval?: Approval
         <div><dt className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Max loss</dt><dd className="font-mono font-medium text-rose-600">{d.plannedMaxLossAmount ? inr(Number(d.plannedMaxLossAmount)) : "—"}</dd></div>
         <div><dt className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Risk : reward</dt><dd className="font-mono font-medium text-ink">{d.riskReward ? `1 : ${d.riskReward}` : "—"}</dd></div>
       </dl>
-      <footer className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-400"><span>v{d.version} · {ago(d.createdAt)} · trust {d.sourceTrustTier?.replace("TIER_", "tier ") ?? "—"}</span>{approval ? <span>by {approval.actorType} {approval.actorRef}</span> : <span className="font-medium text-slate-500">approve in Telegram</span>}</footer>
+      <footer className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-400"><span><Link href={`/decision/${d.id}`} className="font-medium text-royal-600 hover:underline">Why</Link> · v{d.version} · {ago(d.createdAt)} · trust {d.sourceTrustTier?.replace("TIER_", "tier ") ?? "—"}</span>{approval ? <span>by {approval.actorType} {approval.actorRef}</span> : <span className="font-medium text-slate-500">approve in Telegram</span>}</footer>
     </article>
   );
 }
