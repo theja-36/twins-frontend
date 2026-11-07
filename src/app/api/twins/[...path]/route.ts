@@ -18,6 +18,7 @@ const ALLOWED: RegExp[] = [
   /^paper\/(status|summary|positions|outcomes|outcomes\/stats|readiness)$/,
   /^intake\/status$/,
   /^market\/snapshot$/,
+  /^telegram\/(channels|claims)$/,
   /^market\/sources$/,
   /^agents\/status$/,
   /^notifications$/,

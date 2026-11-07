@@ -39,3 +39,18 @@ export function loadSelection(): Set<string> | null {
 export function saveSelection(sel: ReadonlySet<string> | null): void {
   try { if (sel === null) window.localStorage.removeItem(KEY); else window.localStorage.setItem(KEY, JSON.stringify([...sel])); } catch { /* a convenience only */ }
 }
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** Plain-language expiry from the backend's parsed fields; says so when the message did not give one. */
+export function expiryText(e: { status: string | null; day: number | null; month: number | null; year: number | null } | undefined): string {
+  if (!e || e.status === "missing" || e.status === null) return "no expiry given";
+  if (e.day !== null && e.month !== null && e.month >= 1 && e.month <= 12) return `${e.day} ${MONTHS[e.month - 1]}${e.year !== null ? ` ${e.year}` : " (year not given)"}`;
+  return "expiry unclear";
+}
+export function entryText(e: { type: string | null; price: number | null; low: number | null; high: number | null } | undefined): string {
+  if (!e || e.type === null || e.type === "unspecified") return "not given";
+  if (e.type === "range") return e.low !== null && e.high !== null ? `${e.low} to ${e.high}` : "range";
+  if (e.type === "market") return "market";
+  return e.price === null ? e.type : `${e.type} ${e.price}`;
+}
+export function blockerText(code: string): string { return code.replaceAll("_", " ").replaceAll(".", ": "); }
