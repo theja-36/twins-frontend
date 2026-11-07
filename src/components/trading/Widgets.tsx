@@ -9,6 +9,7 @@ import { Pill, SampleBadge, Tip } from "@/components/motion/Controls";
 import { PulseDot } from "@/components/motion/Motion";
 import { getSourceHealth } from "@/services/system";
 import { cn } from "@/lib/utils";
+import { formatCountdown, sessionAt } from "@/lib/marketHours";
 import type { SourceStatus } from "@/types/trading";
 
 const TONE: Record<SourceStatus, "ok" | "warn" | "bad" | "off"> = { OK: "ok", DEGRADED: "warn", STALE: "warn", FAILING: "bad", MISSING: "off", INVALID: "bad" };
@@ -66,3 +67,29 @@ export function QuickActions() {
   );
 }
 export { Empty };
+
+const SESSION_TONE = { open: "ok", pre_open: "warn", closed: "off", weekend: "off" } as const;
+
+/** Exchange session clock (IST). Weekday schedule only: holidays are not applied, and the widget says so. */
+export function MarketHoursWidget() {
+  const [now, setNow] = React.useState<Date | null>(null);
+  React.useEffect(() => {
+    setNow(new Date());
+    const t = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
+  const s = now ? sessionAt(now) : null;
+  return (
+    <section className={cn(card, "p-5")} aria-label="Market hours">
+      <div className="flex items-center justify-between"><h2 className="text-base font-semibold text-ink">Market hours</h2><span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">IST</span></div>
+      {!s ? <div className="mt-4"><Skeleton h={64} /></div> : (
+        <>
+          <p className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-ink"><PulseDot tone={SESSION_TONE[s.state]} live={s.state === "open"} label={s.label} />{s.label}</p>
+          <p className="mt-2 font-mono text-3xl font-semibold tracking-tight text-ink" aria-live="off">{formatCountdown(s.secondsToChange)}</p>
+          <p className="mt-1 text-xs text-slate-500">until {s.nextLabel}</p>
+        </>
+      )}
+      <p className="mt-3 text-[11px] leading-relaxed text-slate-400">Cash and F&amp;O session, Monday to Friday 09:15 to 15:30. Exchange holidays are not applied here, so a holiday still shows as scheduled.</p>
+    </section>
+  );
+}

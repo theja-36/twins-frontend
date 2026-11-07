@@ -5,7 +5,7 @@ import { Filter } from "lucide-react";
 import { useOptional } from "@/components/trading/useOptional";
 import { Empty, PageHeader, SafetyNote, Skeleton, SourceBadge, card } from "@/components/trading/ui";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
-import { Drawer } from "@/components/motion/Overlay";
+import { Drawer, Modal } from "@/components/motion/Overlay";
 import { Pill, Tip } from "@/components/motion/Controls";
 import { ago } from "@/services/trading";
 import { blockerText, entryText, expiryText } from "@/lib/channels";
@@ -19,6 +19,7 @@ export default function ClaimsPage() {
   const res = useOptional<{ claims: TelegramClaim[] }>("telegram/claims?limit=100");
   const [f, setF] = React.useState<ClaimFilter>(NO_FILTER);
   const [open, setOpen] = React.useState<TelegramClaim | null>(null);
+  const [help, setHelp] = React.useState(false);
   const rows = res.state === "ready" ? res.data.claims : [];
   const shown = filterClaims(rows, f);
   const channels = [...new Set(rows.map((r) => r.channel))].sort();
@@ -29,6 +30,17 @@ export default function ClaimsPage() {
     <div className="space-y-6">
       <PageHeader title="Claims" subtitle="What the parser read from each Telegram message: the contract, the levels, how reliable the stop is, and what blocks it. Message text is never shown." right={<SourceBadge />} />
       <SafetyNote>Claims are unverified readings of messages. None can become a trade without the contract data, a usable stop and a human approval in Telegram.</SafetyNote>
+      <button type="button" onClick={() => setHelp(true)} className="text-xs font-medium text-royal-600 underline-offset-2 hover:underline">How is stop quality graded?</button>
+      <Modal open={help} onClose={() => setHelp(false)} title="How stop quality is graded">
+        <ul className="space-y-2">
+          <li><b className="text-ink">Clear (good):</b> the message states the stop and says whether it is a premium or an underlying level.</li>
+          <li><b className="text-ink">Assumed (caution):</b> the message was silent on the basis; the channel's configured default (premium) was applied because the stop is a small fraction of the strike. It is an assumption, never a stated fact.</li>
+          <li><b className="text-ink">Unclear (poor):</b> the basis is missing or the message names both a premium and an underlying basis, so the stop cannot be used.</li>
+          <li><b className="text-ink">None:</b> no stop was found, or the message is not a claim.</li>
+        </ul>
+        <p className="mt-3 text-xs text-slate-500">Grades describe the reading of a message. They are not advice and never approve anything.</p>
+        <button type="button" onClick={() => setHelp(false)} className="mt-4 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">Close</button>
+      </Modal>
       {res.state === "loading" ? <Skeleton h={260} /> : res.state === "absent" ? <Empty title="The claims view is not available on this backend yet" hint="It appears after the backend is updated with the read-only Telegram routes." /> : (<>
         <Stagger className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {([["good", "Stop clear"], ["caution", "Stop assumed"], ["poor", "Stop unclear"], ["none", "No stop / no claim"]] as const).map(([k, l]) => (

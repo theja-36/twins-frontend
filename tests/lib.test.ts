@@ -84,3 +84,36 @@ describe("formatCount", () => {
     expect(formatCount(12, 0, "", "%")).toBe("12%");
   });
 });
+
+import { formatCountdown, sessionAt } from "../src/lib/marketHours";
+
+describe("sessionAt (IST)", () => {
+  // 2026-11-09 is a Monday. 03:45Z = 09:15 IST.
+  it("is open between 09:15 and 15:30 IST on a weekday", () => {
+    expect(sessionAt(new Date("2026-11-09T03:45:00Z")).state).toBe("open");
+    expect(sessionAt(new Date("2026-11-09T09:59:59Z")).state).toBe("open");
+    expect(sessionAt(new Date("2026-11-09T10:00:00Z")).state).toBe("closed");
+  });
+  it("is pre-open from 09:00 to 09:15 and closed before", () => {
+    expect(sessionAt(new Date("2026-11-09T03:30:00Z")).state).toBe("pre_open");
+    expect(sessionAt(new Date("2026-11-09T03:29:59Z")).state).toBe("closed");
+  });
+  it("counts down to the right instant", () => {
+    expect(sessionAt(new Date("2026-11-09T03:44:00Z")).secondsToChange).toBe(60);
+    expect(sessionAt(new Date("2026-11-09T09:59:00Z")).secondsToChange).toBe(60);
+  });
+  it("treats Saturday and Sunday as weekend and points at Monday pre-open", () => {
+    const sat = sessionAt(new Date("2026-11-07T06:00:00Z")); // Saturday 11:30 IST
+    expect(sat.state).toBe("weekend");
+    expect(sat.secondsToChange).toBe(2 * 86_400 - 11.5 * 3600 + 9 * 3600 + 86_400 - 86_400);
+    expect(sessionAt(new Date("2026-11-08T06:00:00Z")).state).toBe("weekend");
+  });
+  it("uses IST for the date, not UTC (Sunday 23:00Z is Monday 04:30 IST)", () => {
+    expect(sessionAt(new Date("2026-11-08T23:00:00Z")).state).toBe("closed");
+  });
+  it("formats countdowns", () => {
+    expect(formatCountdown(59)).toBe("0m 59s");
+    expect(formatCountdown(3 * 3600 + 120)).toBe("3h 2m");
+    expect(formatCountdown(2 * 86_400 + 3600)).toBe("2d 1h");
+  });
+});
