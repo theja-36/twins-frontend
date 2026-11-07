@@ -25,7 +25,7 @@ export default function MarketPage() {
   const { loaded: health } = useLoaded(getSourceHealth, 30_000);
   const h = health?.data;
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader title="Market data" subtitle="What the Kite feed last published, and the data files the research agents can read. Nothing here is a trading signal." right={<SourceBadge loading={loading} />} />
       {!m ? <Skeleton h={220} /> : (
         <>
@@ -45,6 +45,9 @@ export default function MarketPage() {
             )}
           </section>
 
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4"><MarketHoursWidget /><RegimeWidget /><CalendarPanel /><NewsPanel /></div>
+
+          <div className="grid items-start gap-4 xl:grid-cols-2">
           <section className={cn(card, "overflow-hidden")}>
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-4"><div><h2 className="text-base font-semibold text-ink">Snapshot generation</h2><p className="mt-0.5 text-xs text-slate-500">Published by the feed as one all-or-nothing set. {m.quoteCount} quotes, {m.optionQuoteCount} option quotes.</p></div>
               <span className="inline-flex items-center gap-2 text-sm"><Dot tone={m.generation?.status === "complete" ? "ok" : m.visible ? "warn" : "off"} /><b className="text-ink">{m.generation ? m.generation.status : "none"}</b>{m.generation?.id && <span className="font-mono text-xs text-slate-400">{m.generation.id}</span>}</span></div>
@@ -66,6 +69,7 @@ export default function MarketPage() {
             )}
             {h && !h.passLogAvailable ? <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400">Exporter pass history is not available to the API, so failures are inferred from file age only.</p> : null}
           </section>
+          </div>
 
           <section className={cn(card, "overflow-hidden")}>
             <div className="border-b border-slate-100 px-5 py-4"><h2 className="text-base font-semibold text-ink">Provider data files</h2><p className="mt-0.5 text-xs text-slate-500">News, sentiment, macro, calendar and market data for the research agents. Written by the provider exporter, which is off until the host allow-list is installed.</p></div>
@@ -75,7 +79,7 @@ export default function MarketPage() {
                 <div className="text-right text-xs text-slate-500">{p.present ? <><p>{p.count ?? 0} item{p.count === 1 ? "" : "s"}</p><p className="text-slate-400">{p.ageSeconds === null ? "" : `${duration(p.ageSeconds)} old`}</p></> : <span className="text-slate-400">—</span>}</div>
               </li>))}</ul>
           </section>
-          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4"><MarketHoursWidget /><RegimeWidget /><CalendarPanel /><NewsPanel /></div>
+
         </>
       )}
     </div>

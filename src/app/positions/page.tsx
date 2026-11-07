@@ -20,7 +20,7 @@ export default function PositionsPage() {
   const exposure = open.reduce((a, p) => a + (p.lastPrice ?? p.fillPrice ?? 0) * p.remainingQuantity, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader title="Portfolio" subtitle="Simulated trades, managed by stop, targets and a trailing stop, with exposure and outcome attribution. Prices refresh every 10 seconds." right={<div className="flex items-center gap-2"><SourceBadge source={loaded?.source} note={loaded?.note} loading={loading} /><button onClick={refresh} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Refresh</button></div>} />
       <DataBanner source={loaded?.source} note={loaded?.note} onRetry={refresh} />
       <SafetyNote>These are simulated positions. Nothing here is sent to a broker, and no real order exists.</SafetyNote>
@@ -34,8 +34,8 @@ export default function PositionsPage() {
 
       <PortfolioPanels />
 
-      <div className="flex flex-wrap gap-2">
-        {FILTERS.map(([k, l]) => <button key={k} onClick={() => setFilter(k)} className={cn("rounded-full border px-3.5 py-1.5 text-xs font-medium transition", filter === k ? "border-royal-600 bg-royal-600 text-white shadow-hero" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300")}>{l}{k !== "ALL" && <span className="ml-1.5 opacity-70">{all.filter((p) => p.state === k).length}</span>}</button>)}
+      <div role="tablist" aria-label="Filter by state" className="inline-flex flex-wrap rounded-md border border-slate-200/80 p-0.5 font-mono text-xs">
+        {FILTERS.map(([k, l]) => { const n = k === "ALL" ? all.length : all.filter((p) => p.state === k).length; return <button key={k} role="tab" aria-selected={filter === k} onClick={() => setFilter(k)} className={cn("rounded px-3 py-1.5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-royal-500", filter === k ? "bg-slate-50 text-ink" : "text-slate-500 hover:text-ink")}>{l} <span className="text-slate-400">{n}</span></button>; })}
       </div>
 
       {!loaded ? <div className="space-y-3"><Skeleton /><Skeleton /></div> : rows.length === 0 ? (
