@@ -22,39 +22,21 @@ const config: Config = {
           muted: "#94A3B8",
           faint: "#CBD5E1",
         },
-        royal: {
-          50: "#EFF6FF",
-          100: "#DBEAFE",
-          200: "#BFDBFE",
-          300: "#93C5FD",
-          400: "#60A5FA",
-          500: "#3B82F6",
-          600: "#2563EB", // Primary saturated royal blue
-          700: "#1D4ED8",
-          800: "#1E40AF",
-          900: "#1E3A8A",
-          950: "#0F1E4A", // Deep royal backdrop
-        },
-        acid: {
-          50: "#F7FEE7",
-          100: "#ECFCCB",
-          200: "#D9F99D",
-          300: "#BEF264",
-          400: "#A3E635", // High-visibility acid-lime accent
-          500: "#84CC16",
-          600: "#65A30D",
-          700: "#4D7C0F",
-        },
+        // Cockpit palette: ONE accent system. teal = live / positive / buy, coral = negative / sell / risk, amber (tailwind default) = caution.
+        royal: { 50: "#E6FBF6", 100: "#C2F5E8", 200: "#8CEBD4", 300: "#4FE0C0", 400: "#1FD9B1", 500: "#00D4AA", 600: "#00B891", 700: "#008F70", 800: "#066B56", 900: "#0A5444", 950: "#06362C" },
+        acid: { 50: "#E6FBF6", 100: "#C2F5E8", 200: "#8CEBD4", 300: "#4FE0C0", 400: "#00D4AA", 500: "#00B891", 600: "#008F70", 700: "#066B56" },
+        emerald: { 50: "#E6FBF6", 100: "#C2F5E8", 200: "#8CEBD4", 300: "#4FE0C0", 400: "#1FD9B1", 500: "#00D4AA", 600: "#00B891", 700: "#008F70", 800: "#066B56", 900: "#0A5444", 950: "#06362C" },
+        rose: { 50: "#FFEEF0", 100: "#FFD9DD", 200: "#FFB3BB", 300: "#FF8793", 400: "#FF6272", 500: "#FF4757", 600: "#E5303F", 700: "#BF2432", 800: "#8F1C27", 900: "#6B161E", 950: "#3D0C11" },
       },
       boxShadow: {
-        card: "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.03)",
+        card: "0 0 0 0 transparent",
         cardHover: "0 8px 16px -4px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04)",
         hero: "0 10px 25px -5px rgba(29, 78, 216, 0.12), 0 8px 10px -6px rgba(29, 78, 216, 0.08)",
         dropdown: "0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
+        mono: ["var(--font-jb-mono)", "var(--font-geist-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },
       keyframes: {
         "fade-up": { "0%": { opacity: "0", transform: "translateY(8px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },

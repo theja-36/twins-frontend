@@ -52,25 +52,25 @@ function Fact({ k, v, suffix = "", decimals = 0 }: { k: string; v: number | null
 }
 
 /** Sample economic calendar. SAMPLE: the calendar file exists on the server but no read route returns its events yet. */
-export function CalendarPanel() {
+export function CalendarPanel({ compact = false }: { compact?: boolean }) {
   const rows: Array<[string, string, "bad" | "warn" | "mute"]> = [["Tomorrow 18:00", "US CPI release", "bad"], ["Wed 19:30", "US Fed policy decision", "bad"], ["Thu 10:00", "India CPI inflation", "warn"], ["Fri 17:30", "US jobs report", "warn"]];
   return (
     <section className={cn(card, "p-5")} aria-label="Economic calendar (sample)">
       <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="flex items-center gap-2 text-base font-semibold text-ink"><CalendarClock className="h-4 w-4 text-royal-500" aria-hidden />Economic calendar</h2><SampleBadge note="no events route yet" /></div>
-      <ul className="mt-3 divide-y divide-slate-50">{rows.map(([when, what, tone]) => <li key={what} className="flex items-center justify-between gap-3 py-2.5 text-sm"><span><span className="block text-ink">{what}</span><span className="block text-xs text-slate-500">{when}</span></span><Pill tone={tone}>{tone === "bad" ? "high impact" : "medium"}</Pill></li>)}</ul>
-      <p className="mt-2 text-xs text-slate-500">Layout preview with invented events. High-impact events within 4 hours halve the sizing shadow's size.</p>
+      <ul className="mt-3 divide-y divide-slate-50">{rows.slice(0, compact ? 3 : rows.length).map(([when, what, tone]) => <li key={what} className="flex items-center justify-between gap-3 py-2.5 text-sm"><span><span className="block text-ink">{what}</span><span className="block text-xs text-slate-500">{when}</span></span><Pill tone={tone}>{tone === "bad" ? "high impact" : "medium"}</Pill></li>)}</ul>
+      {compact ? null : <p className="mt-2 text-xs text-slate-500">Layout preview with invented events. High-impact events within 4 hours halve the sizing shadow's size.</p>}
     </section>
   );
 }
 
 /** Sample news feed. SAMPLE: Marketaux is not activated and the Telegram commentary parser is not wired. */
-export function NewsPanel() {
+export function NewsPanel({ compact = false }: { compact?: boolean }) {
   const res = useOptional<ChannelNewsView>("news/telegram?limit=20", 60_000);
   if (res.state === "loading") return <section className={cn(card, "p-5")} aria-label="News feed"><Skeleton h={160} /></section>;
-  if (res.state === "absent") return <SampleNewsPanel />;
-  const v = res.data, note = statusNote(v), clusters = orderClusters(v.clusters).slice(0, 8);
+  if (res.state === "absent") return <SampleNewsPanel compact={compact} />;
+  const v = res.data, note = statusNote(v), clusters = orderClusters(v.clusters).slice(0, compact ? 3 : 8);
   return (
-    <section className={cn(card, "p-5 md:col-span-2")} aria-label="Channel news">
+    <section className={cn(card, "p-5", !compact && "md:col-span-2")} aria-label="Channel news">
       <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="flex items-center gap-2 text-base font-semibold text-ink"><Newspaper className="h-4 w-4 text-royal-500" aria-hidden />Channel news</h2>
         <Pill tone={!v.summary.available ? "mute" : v.summary.recommendation === "CAUTION" ? "warn" : "mute"}>{v.summary.line}</Pill></div>
       {note ? <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300" role="status">{note}</p> : null}
@@ -81,7 +81,7 @@ export function NewsPanel() {
             <span className="flex items-center gap-2">{c.mixed ? <Pill tone="warn">mixed</Pill> : null}<PolarityBar value={c.polarity} /><Pill tone={polarityTone(c.polarity)}>{polarityWord(c.polarity)}</Pill></span>
           </li>))}</ul>
       )}
-      <p className="mt-3 text-xs text-slate-500">Commentary from channels you capture: low reliability, structured fields only (symbol, theme, tone). Channel sentences are never shown. This is context, never a signal, and it can only ask for caution.</p>
+      {compact ? <Link href="/market" className="mt-3 inline-block text-xs font-medium text-royal-600 hover:underline">Open the full panel</Link> : <p className="mt-3 text-xs text-slate-500">Commentary from channels you capture: low reliability, structured fields only (symbol, theme, tone). Channel sentences are never shown. This is context, never a signal, and it can only ask for caution.</p>}
     </section>
   );
 }
@@ -110,12 +110,12 @@ export function NewsSummaryLine() {
 }
 
 /** Shown only while the backend has no news route (404). Invented values, clearly labelled. */
-function SampleNewsPanel() {
+function SampleNewsPanel({ compact }: { compact: boolean }) {
   const rows: Array<[string, string, string, "bad" | "ok" | "mute"]> = [["RELIANCE", "Marketaux", "negative", "bad"], ["Rates", "Telegram commentary", "neutral", "mute"], ["HDFCBANK", "Marketaux", "positive", "ok"]];
   return (
     <section className={cn(card, "p-5")} aria-label="News feed (sample)">
       <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="flex items-center gap-2 text-base font-semibold text-ink"><Newspaper className="h-4 w-4 text-royal-500" aria-hidden />News</h2><SampleBadge note="Marketaux and channel commentary not connected" /></div>
-      <ul className="mt-3 divide-y divide-slate-50">{rows.map(([topic, src, tone, t]) => <li key={topic} className="flex items-center justify-between gap-3 py-2.5 text-sm"><span><span className="block font-mono text-[13px] text-ink">{topic}</span><span className="block text-xs text-slate-500">{src}</span></span><Pill tone={t}>{tone}</Pill></li>)}</ul>
+      <ul className="mt-3 divide-y divide-slate-50">{rows.slice(0, compact ? 3 : rows.length).map(([topic, src, tone, t]) => <li key={topic} className="flex items-center justify-between gap-3 py-2.5 text-sm"><span><span className="block font-mono text-[13px] text-ink">{topic}</span><span className="block text-xs text-slate-500">{src}</span></span><Pill tone={t}>{tone}</Pill></li>)}</ul>
       <p className="mt-2 text-xs text-slate-500">Structured items only: symbol, theme and tone. Headlines and channel sentences are never shown or passed on.</p>
     </section>
   );

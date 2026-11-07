@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-200 ease-in-out lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-60 bg-white transform transition-transform duration-200 ease-in-out lg:hidden ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -35,14 +35,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <Sidebar onNavClick={() => setMobileMenuOpen(false)} />
+        <Sidebar expanded onNavClick={() => setMobileMenuOpen(false)} />
       </div>
 
       {/* Main Layout Container */}
       <div className="flex flex-1">
         {/* Desktop Fixed Sidebar */}
-        <div className="hidden lg:block w-64 shrink-0">
-          <div className="fixed inset-y-0 left-0 w-64 z-20">
+        <div className="hidden lg:block w-14 shrink-0">
+          <div className="fixed inset-y-0 left-0 w-14 z-30">
             <Sidebar />
           </div>
         </div>
@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />
           <BackendBanner />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+          <main className="flex-1 p-3 sm:p-4 lg:p-5 max-w-[1680px] w-full mx-auto space-y-4">
             <PageTransition>{children}</PageTransition>
           </main>
         </div>

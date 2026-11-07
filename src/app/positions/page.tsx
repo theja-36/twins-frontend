@@ -42,7 +42,7 @@ export default function PositionsPage() {
         <Empty title="No positions here yet" hint={filter === "ALL" ? "A paper trade is created only after a human approves a decision, and only when paper trading is switched on for this server." : "Nothing matches this filter."} />
       ) : (
         <>
-          <div className={cn(card, "hidden overflow-x-auto md:block")}>
+          <div className={cn(card, "tbl-scroll hidden md:block")}>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-slate-100 text-left"><Th>Instrument</Th><Th>State</Th><Th right>Qty</Th><Th right>Entry / fill</Th><Th right>Last</Th><Th>Stop · Entry · Targets</Th><Th right>P&L</Th><Th right>R</Th></tr></thead>
               <tbody>{rows.map((p) => <Row key={p.tradeId} p={p} />)}</tbody>

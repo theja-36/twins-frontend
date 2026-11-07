@@ -145,3 +145,36 @@ describe("channel news helpers", () => {
     expect(statusNote({ status: "invalid" })).toMatch(/could not be read/);
   });
 });
+
+import { heroFigures, istClock, safetyFlags, sparkPath } from "../src/lib/cockpit";
+
+describe("cockpit helpers", () => {
+  it("IST clock is UTC+5:30 and zero-padded", () => {
+    expect(istClock(new Date("2026-11-09T03:45:05Z"))).toBe("09:15:05");
+    expect(istClock(new Date("2026-11-08T23:59:59Z"))).toBe("05:29:59");
+  });
+  it("safety flags never show an unreadable control as safe", () => {
+    const f = safetyFlags({ paperEffective: false, engineEnabled: false, engineShadow: true, kill: undefined, intake: undefined });
+    expect(f.find((x) => x.key === "kill")).toMatchObject({ value: "unreadable", tone: "warn" });
+    expect(f.find((x) => x.key === "intake")).toMatchObject({ value: "unreadable", tone: "warn" });
+    expect(f.find((x) => x.key === "live")).toMatchObject({ value: "locked", tone: "ok" });
+    expect(f.find((x) => x.key === "engine")).toMatchObject({ value: "shadow", tone: "ok" });
+    expect(f.find((x) => x.key === "paper")).toMatchObject({ value: "off" });
+  });
+  it("flags an active kill switch, an enforcing engine and running paper trading", () => {
+    const f = safetyFlags({ paperEffective: true, engineEnabled: true, engineShadow: false, kill: true, intake: false });
+    expect(f.map((x) => x.tone)).toEqual(["ok", "bad", "warn", "warn", "warn"]);
+  });
+  it("sparkPath scales into the box and refuses degenerate input", () => {
+    expect(sparkPath([], 100, 20)).toBe("");
+    expect(sparkPath([5], 100, 20)).toBe("");
+    expect(sparkPath([0, 10], 100, 20, 0)).toBe("M0.0,20.0 L100.0,0.0");
+    expect(sparkPath([3, 3, 3], 100, 20, 0)).toBe("M0.0,20.0 L50.0,20.0 L100.0,20.0");
+    expect(sparkPath([1, Number.NaN, 2], 100, 20, 0)).toBe("M0.0,20.0 L100.0,0.0");
+  });
+  it("hero figures come only from what the API exposes", () => {
+    expect(heroFigures([], null)).toEqual({ total: null, day: null, spark: [] });
+    expect(heroFigures([1, 2, 5], 3)).toEqual({ total: 5, day: 3, spark: [1, 2, 5] });
+    expect(heroFigures(Array.from({ length: 100 }, (_, i) => i), 0).spark).toHaveLength(60);
+  });
+});
