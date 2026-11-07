@@ -11,7 +11,9 @@ import { Pill, SampleBadge } from "@/components/motion/Controls";
 import { CountUp } from "@/components/motion/Motion";
 import { getOutcomes, getOutcomeStats, getPositions } from "@/services/trading";
 import { currentDrawdownR, equityCurve, exposureBySymbol } from "@/lib/portfolio";
-import type { TelegramChannel } from "@/types/trading";
+import type { ChannelNewsView, TelegramChannel } from "@/types/trading";
+import { clusterTitle, orderClusters, polarityTone, polarityWidth, polarityWord, statusNote } from "@/lib/news";
+import { ago } from "@/services/trading";
 import { cn } from "@/lib/utils";
 
 /** Portfolio charts and outcome-attribution summary (real paper data; empty when paper trading is off). */
@@ -63,6 +65,52 @@ export function CalendarPanel() {
 
 /** Sample news feed. SAMPLE: Marketaux is not activated and the Telegram commentary parser is not wired. */
 export function NewsPanel() {
+  const res = useOptional<ChannelNewsView>("news/telegram?limit=20", 60_000);
+  if (res.state === "loading") return <section className={cn(card, "p-5")} aria-label="News feed"><Skeleton h={160} /></section>;
+  if (res.state === "absent") return <SampleNewsPanel />;
+  const v = res.data, note = statusNote(v), clusters = orderClusters(v.clusters).slice(0, 8);
+  return (
+    <section className={cn(card, "p-5 md:col-span-2")} aria-label="Channel news">
+      <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="flex items-center gap-2 text-base font-semibold text-ink"><Newspaper className="h-4 w-4 text-royal-500" aria-hidden />Channel news</h2>
+        <Pill tone={!v.summary.available ? "mute" : v.summary.recommendation === "CAUTION" ? "warn" : "mute"}>{v.summary.line}</Pill></div>
+      {note ? <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300" role="status">{note}</p> : null}
+      {clusters.length === 0 ? <p className="mt-3 text-sm text-slate-500">{v.status === "missing" || v.status === "invalid" ? "Unavailable." : "No commentary from the captured channels in the last 48 hours. That is not an all-clear."}</p> : (
+        <ul className="mt-3 divide-y divide-slate-50">{clusters.map((c) => (
+          <li key={c.clusterId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2.5 text-sm">
+            <span className="min-w-0"><span className="block font-mono text-[13px] text-ink">{clusterTitle(c)}</span><span className="block text-xs text-slate-500">{c.items} item{c.items === 1 ? "" : "s"} · {c.channels} channel{c.channels === 1 ? "" : "s"} · {ago(c.bucketStart)}</span></span>
+            <span className="flex items-center gap-2">{c.mixed ? <Pill tone="warn">mixed</Pill> : null}<PolarityBar value={c.polarity} /><Pill tone={polarityTone(c.polarity)}>{polarityWord(c.polarity)}</Pill></span>
+          </li>))}</ul>
+      )}
+      <p className="mt-3 text-xs text-slate-500">Commentary from channels you capture: low reliability, structured fields only (symbol, theme, tone). Channel sentences are never shown. This is context, never a signal, and it can only ask for caution.</p>
+    </section>
+  );
+}
+
+function PolarityBar({ value }: { value: number }) {
+  const w = polarityWidth(value) / 2;
+  return (
+    <span className="relative inline-block h-1.5 w-16 rounded-full bg-slate-200 dark:bg-slate-700" role="img" aria-label={`tone ${polarityWord(value)}`}>
+      <span className="absolute left-1/2 top-[-2px] h-2.5 w-px bg-slate-400" aria-hidden />
+      <span className={cn("absolute top-0 h-1.5 rounded-full", value < 0 ? "bg-rose-500" : "bg-emerald-500")} style={value < 0 ? { right: "50%", width: `${w}%` } : { left: "50%", width: `${w}%` }} />
+    </span>
+  );
+}
+
+/** One line for the Dashboard. Silent when the backend does not offer the route. */
+export function NewsSummaryLine() {
+  const res = useOptional<ChannelNewsView>("news/telegram?limit=1", 60_000);
+  if (res.state !== "ready") return null;
+  const s = res.data.summary;
+  return (
+    <p className="flex flex-wrap items-center gap-2 text-sm text-slate-500" aria-label="Channel news summary">
+      <Newspaper className="h-4 w-4 text-royal-500" aria-hidden /><Link href="/market" className="font-medium text-ink hover:underline">Channel news</Link>
+      <Pill tone={!s.available ? "mute" : s.recommendation === "CAUTION" ? "warn" : "mute"}>{s.line}</Pill>
+    </p>
+  );
+}
+
+/** Shown only while the backend has no news route (404). Invented values, clearly labelled. */
+function SampleNewsPanel() {
   const rows: Array<[string, string, string, "bad" | "ok" | "mute"]> = [["RELIANCE", "Marketaux", "negative", "bad"], ["Rates", "Telegram commentary", "neutral", "mute"], ["HDFCBANK", "Marketaux", "positive", "ok"]];
   return (
     <section className={cn(card, "p-5")} aria-label="News feed (sample)">

@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { useLoaded } from "@/components/trading/hooks";
 import { Chip, DataBanner, Dot, Empty, PageHeader, Skeleton, SourceBadge, card } from "@/components/trading/ui";
 import { EquityAreaChart } from "@/components/trading/charts";
+import { NewsSummaryLine } from "@/components/trading/Panels";
 import { MarketHoursWidget, QuickActions, RegimeWidget, SourceHealthWidget } from "@/components/trading/Widgets";
 import { CountUp, HoverLift, PulseDot, Stagger, StaggerItem } from "@/components/motion/Motion";
 import { Pill, Tip } from "@/components/motion/Controls";
@@ -91,6 +92,8 @@ export default function DashboardPage() {
           )}
         </section>
       </div>
+
+      <NewsSummaryLine />
 
       <div className="grid gap-4 lg:grid-cols-3"><MarketHoursWidget /><RegimeWidget /><QuickActions /></div>
     </div>
