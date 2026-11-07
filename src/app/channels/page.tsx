@@ -42,30 +42,40 @@ export default function ChannelsPage() {
       {!loaded ? <Skeleton h={220} /> : channels.length === 0 ? (
         <Empty title="No channels yet" hint="A channel appears here after the capture client has delivered a message from it." />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
-          <section className={cn(card, "overflow-hidden")}>
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4"><h2 className="text-base font-semibold text-ink">Channels <span className="text-xs font-normal text-slate-400">{channels.length} in the last {recent.length} messages</span></h2>{selected !== null ? <button type="button" onClick={reset} className="text-xs font-medium text-royal-600 hover:underline">Show all</button> : null}</div>
-            <ul className="divide-y divide-slate-50">{channels.map((c) => (
-              <li key={c.channel}>
-                <label className="flex cursor-pointer items-start gap-3 px-5 py-3.5">
-                  <input type="checkbox" className="mt-1 h-4 w-4 accent-royal-600" checked={isOn(c.channel)} onChange={() => toggle(c.channel)} />
-                  <span className="mt-1.5"><PulseDot tone={health(c.lastReceivedAt)} live={health(c.lastReceivedAt) === "ok"} label={`last message ${c.lastReceivedAt ? ago(c.lastReceivedAt) : "never"}`} /></span><span className="min-w-0 flex-1"><span className="block font-mono text-[13px] text-ink">{c.channel}{detail.get(c.channel)?.name ? <span className="ml-2 font-sans text-xs text-slate-500">{detail.get(c.channel)?.name}</span> : null}</span><span className="block text-xs text-slate-500">{c.total} recent · {detail.get(c.channel) ? `${detail.get(c.channel)?.messages} stored · ${detail.get(c.channel)?.claims.claim} claims` : "totals need the newer backend"}{c.lastReceivedAt ? ` · last ${ago(c.lastReceivedAt)}` : ""}</span><span className="mt-1 block"><Tip text="No scorecard exists for this channel yet, so its trust tier is unknown."><Pill tone="mute">trust: unknown</Pill></Tip></span>{detail.get(c.channel)?.captureAllowed === false ? <span className="block text-xs text-amber-700">capture is not allowed for this channel</span> : null}</span>
-                </label>
-              </li>))}</ul>
+        <div className="space-y-4">
+          <section aria-label="Channels">
+            <div className="mb-2 flex items-center justify-between"><h2 className="text-sm font-semibold text-ink">Channels <span className="font-mono text-xs font-normal text-slate-400">{channels.length} in the last {recent.length} messages</span></h2>{selected !== null ? <button type="button" onClick={reset} className="text-xs font-medium text-royal-600 hover:underline">Show all</button> : null}</div>
+            <Stagger className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{channels.map((c) => {
+              const d = detail.get(c.channel), h = health(c.lastReceivedAt), on = isOn(c.channel);
+              const claimTotal = d ? d.claims.claim + d.claims.ambiguous + d.claims.unsupported : null;
+              return (
+                <StaggerItem key={c.channel}>
+                  <div className={cn(card, "p-4 transition-colors", !on && "opacity-50")}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0"><p className="flex items-center gap-2 font-mono text-sm font-semibold text-ink"><PulseDot tone={h} live={h === "ok"} label={`last message ${c.lastReceivedAt ? ago(c.lastReceivedAt) : "never"}`} />{c.channel}</p>{d?.name ? <p className="mt-0.5 truncate text-xs text-slate-500">{d.name}</p> : null}</div>
+                      <label className="flex items-center gap-1.5 text-xs text-slate-500"><input type="checkbox" className="h-4 w-4 accent-royal-600" checked={on} onChange={() => toggle(c.channel)} aria-label={`Show ${c.channel} on this page`} />show</label>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-3 gap-2 font-mono text-xs"><div><dt className="text-[10px] uppercase tracking-wider text-slate-400">messages</dt><dd className="text-base font-semibold text-ink">{d ? d.messages : c.total}</dd></div><div><dt className="text-[10px] uppercase tracking-wider text-slate-400">claims</dt><dd className="text-base font-semibold text-ink">{claimTotal ?? "—"}</dd></div><div><dt className="text-[10px] uppercase tracking-wider text-slate-400">last</dt><dd className="text-base font-semibold text-ink">{c.lastReceivedAt ? ago(c.lastReceivedAt) : "never"}</dd></div></dl>
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5"><Tip text="Trust tiers need scorecards from evaluated outcomes, which do not exist yet."><Pill tone="mute">trust: unknown</Pill></Tip>{d?.captureAllowed === true ? <Pill tone="ok">capture allowed</Pill> : d?.captureAllowed === false ? <Pill tone="warn">capture not allowed</Pill> : null}{Object.entries(c.byStatus).map(([st, n]) => <Chip key={st} kind={STATUS_KIND[st] ?? "CLOSED"}>{`${n} ${st.replaceAll("_", " ").toLowerCase()}`}</Chip>)}</div>
+                  </div>
+                </StaggerItem>);
+            })}</Stagger>
           </section>
-          <section className={cn(card, "overflow-hidden")}>
-            <div className="border-b border-slate-100 px-5 py-4"><h2 className="text-base font-semibold text-ink">Recent messages <span className="text-xs font-normal text-slate-400">{feed.length} shown</span></h2><p className="mt-0.5 text-xs text-slate-500">Newest first. What became of each message, not its content.</p></div>
-            {feed.length === 0 ? <div className="p-5"><Empty title="No channel selected" hint="Tick at least one channel, or choose Show all." /></div> : (
-              <ul className="divide-y divide-slate-50">{feed.map((r) => (
-                <li key={r.id + (r.receivedAt ?? "")} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
-                  <div className="flex min-w-0 items-center gap-3"><Chip kind={STATUS_KIND[r.status] ?? "CLOSED"}>{r.status.replaceAll("_", " ")}</Chip><div className="min-w-0"><p className="font-mono text-xs text-ink">{r.channel}</p><p className="text-xs text-slate-400">{r.type.replaceAll("_", " ")}</p></div></div>
-                  <span className="text-xs text-slate-500">{r.receivedAt ? ago(r.receivedAt) : "—"}</span>
-                </li>))}</ul>
-            )}
-          </section>
+          <div className="grid items-start gap-4 xl:grid-cols-2">
+            <section className={cn(card, "overflow-hidden")}>
+              <div className="border-b border-slate-200/80 px-4 py-3"><h2 className="text-sm font-semibold text-ink">Recent messages <span className="font-mono text-xs font-normal text-slate-400">{feed.length} shown</span></h2><p className="mt-0.5 text-xs text-slate-500">Newest first. What became of each message, not its content.</p></div>
+              {feed.length === 0 ? <div className="p-5"><Empty title="No channel selected" hint="Tick at least one channel, or choose Show all." /></div> : (
+                <ul className="max-h-[60vh] divide-y divide-slate-200/60 overflow-y-auto">{feed.map((r) => (
+                  <li key={r.id + (r.receivedAt ?? "")} className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5">
+                    <div className="flex min-w-0 items-center gap-3"><Chip kind={STATUS_KIND[r.status] ?? "CLOSED"}>{r.status.replaceAll("_", " ")}</Chip><div className="min-w-0"><p className="font-mono text-xs text-ink">{r.channel}</p><p className="text-xs text-slate-400">{r.type.replaceAll("_", " ")}</p></div></div>
+                    <span className="font-mono text-xs text-slate-500">{r.receivedAt ? ago(r.receivedAt) : "—"}</span>
+                  </li>))}</ul>
+              )}
+            </section>
+            <ClaimsPanel res={claimsRes} isOn={isOn} />
+          </div>
         </div>
       )}
-      <ClaimsPanel res={claimsRes} isOn={isOn} />
     </div>
   );
 }
