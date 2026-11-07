@@ -59,6 +59,7 @@ const navGroups: NavGroup[] = [
   {
     label: "Data",
     items: [
+      { name: "Channels", href: "/channels", icon: Radio },
       { name: "Telegram Intake", href: "/intake", icon: Send },
       { name: "Market data", href: "/market", icon: TrendingUp },
     ],
