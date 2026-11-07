@@ -95,8 +95,8 @@ export default function DashboardPage() {
 }
 
 function HeroCell({ title, tip, wide = false, children }: { title: string; tip?: string; wide?: boolean; children: React.ReactNode }) {
-  const body = <div className={cn("border-b border-slate-200/80 px-4 py-3 sm:px-5 sm:py-4 lg:border-b-0", wide && "col-span-2 lg:col-span-1")}><p className="mb-1.5 text-[11px] font-mono uppercase tracking-wider text-slate-500">{title}</p>{children}</div>;
-  return tip ? <Tip text={tip}>{body}</Tip> : body;
+  const body = <div className="px-4 py-3 sm:px-5 sm:py-4"><p className="mb-1.5 text-[11px] font-mono uppercase tracking-wider text-slate-500">{title}</p>{children}</div>;
+  return <div className={cn("min-w-0 border-b border-slate-200/80 lg:border-b-0", wide && "col-span-2 lg:col-span-1")}>{tip ? <Tip text={tip}>{body}</Tip> : body}</div>;
 }
 
 /** SAMPLE until the regime detector feeds a route. Labelled as such. */
