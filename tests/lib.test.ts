@@ -117,3 +117,31 @@ describe("sessionAt (IST)", () => {
     expect(formatCountdown(2 * 86_400 + 3600)).toBe("2d 1h");
   });
 });
+
+import { clusterTitle, orderClusters, polarityTone, polarityWidth, polarityWord, statusNote } from "../src/lib/news";
+const cl = (o: Record<string, unknown> = {}) => ({ clusterId: "cl-1", symbol: "RELIANCE", theme: "corporate_action", bucketStart: "2026-11-09T04:00:00Z", items: 2, channels: 1, polarity: 0, mixed: false, ...o }) as never;
+
+describe("channel news helpers", () => {
+  it("words and tones follow the thresholds", () => {
+    expect([-0.9, -0.5, -0.3, 0, 0.3, 0.5, 0.9].map(polarityWord)).toEqual(["negative", "negative", "slightly negative", "neutral", "slightly positive", "positive", "positive"]);
+    expect([polarityTone(-0.6), polarityTone(-0.3), polarityTone(0), polarityTone(0.3)]).toEqual(["bad", "warn", "mute", "ok"]);
+    expect(polarityWidth(-2)).toBe(100);
+    expect(polarityWidth(0.25)).toBe(25);
+  });
+  it("titles use plain words and handle a missing symbol or theme", () => {
+    expect(clusterTitle(cl())).toBe("RELIANCE · corporate action");
+    expect(clusterTitle(cl({ symbol: null, theme: null }))).toBe("Market · no theme");
+  });
+  it("orders mixed first, then most negative, without mutating the input", () => {
+    const input = [cl({ clusterId: "a", polarity: 0.4 }), cl({ clusterId: "b", polarity: -0.8 }), cl({ clusterId: "c", mixed: true, polarity: 0.1 })];
+    const copy = [...input];
+    expect(orderClusters(input).map((c: { clusterId: string }) => c.clusterId)).toEqual(["c", "b", "a"]);
+    expect(input).toEqual(copy);
+  });
+  it("non-ok statuses are explained and never read as 'no news'", () => {
+    expect(statusNote({ status: "ok" })).toBeNull();
+    expect(statusNote({ status: "missing" })).toMatch(/not the same as no news/);
+    expect(statusNote({ status: "stale" })).toMatch(/older than expected/);
+    expect(statusNote({ status: "invalid" })).toMatch(/could not be read/);
+  });
+});

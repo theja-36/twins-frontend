@@ -19,13 +19,14 @@ const ALLOWED: RegExp[] = [
   /^intake\/status$/,
   /^market\/snapshot$/,
   /^telegram\/(channels|claims)$/,
+  /^news\/telegram$/,
   /^market\/sources$/,
   /^agents\/status$/,
   /^notifications$/,
   /^system\/config$/,
   /^paper\/trades\/[0-9a-f-]{36}\/events$/i,
 ];
-const PASS_PARAMS = ["limit", "status", "state"];
+const PASS_PARAMS = ["limit", "status", "state", "symbol"];
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;

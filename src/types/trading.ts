@@ -84,3 +84,12 @@ export interface TelegramClaim {
   claim: { action: "buy" | "sell" | null; underlying: string | null; strike: number | null; optionType: "CE" | "PE" | null; entry: { type: string | null; price: number | null; low: number | null; high: number | null }; stopLoss: number | null; targets: number[]; levelBasis: string | null; levelBasisInferred: boolean; levelBasisConflict: boolean; expiry: { status: string | null; day: number | null; month: number | null; year: number | null } } | null;
   blockers: Array<{ code: string; severity: string }>;
 }
+
+/** Backend GET news/telegram: STRUCTURED fields only (no message text). `summary.recommendation` is capped at CAUTION by the backend. */
+export interface ChannelNewsItemView { id: string; publishedAt: string; channel: string; symbols: string[]; themes: string[]; polarity: number; reliability: number }
+export interface ChannelNewsClusterView { clusterId: string; symbol: string | null; theme: string | null; bucketStart: string; items: number; channels: number; polarity: number; mixed: boolean }
+export interface ChannelNewsView {
+  status: "ok" | "stale" | "missing" | "invalid"; reason: string | null; asOf: string | null; ageSeconds: number | null;
+  summary: { available: boolean; clusters: number; mixed: number; negative: number; recommendation: "NONE" | "CAUTION"; line: string };
+  items: ChannelNewsItemView[]; clusters: ChannelNewsClusterView[];
+}
