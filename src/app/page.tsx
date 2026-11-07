@@ -36,8 +36,8 @@ export default function DashboardPage() {
       <DataBanner onRetry={() => { cfg.refresh(); sum.refresh(); pos.refresh(); }} />
 
       {/* Hero strip: big tabular figures */}
-      <section className={cn(card, "grid items-stretch divide-y divide-slate-200/80 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto]")} aria-label="Portfolio hero">
-        <HeroCell title="Paper P&L (total)" tip="Cumulative profit and loss of simulated closed trades. The API exposes no capital figure, so no portfolio value is shown.">
+      <section className={cn(card, "grid grid-cols-2 items-stretch lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto]")} aria-label="Portfolio hero">
+        <HeroCell wide title="Paper P&L (total)" tip="Cumulative profit and loss of simulated closed trades. The API exposes no capital figure, so no portfolio value is shown.">
           <div className="flex items-end gap-4">
             <span className={cn("text-4xl font-semibold tracking-tight sm:text-[44px]", tone(hero.total) === "up" && "text-emerald-500", tone(hero.total) === "down" && "text-rose-500")}><CountUp value={hero.total} prefix="₹" className="font-mono tabular-nums" /></span>
             <Sparkline path={sparkPath(hero.spark, 140, 36)} tone={tone(hero.total)} width={140} height={36} label="Cumulative paper P&L, last closed trades" />
@@ -47,7 +47,7 @@ export default function DashboardPage() {
         <HeroCell title="Day P&L"><span className={cn("text-3xl font-semibold tracking-tight", tone(day) === "up" && "text-emerald-500", tone(day) === "down" && "text-rose-500")}><CountUp value={day} prefix="₹" className="font-mono tabular-nums" /></span><p className="mt-1 text-xs text-slate-500">closed today plus open</p></HeroCell>
         <HeroCell title="Exposure"><span className="text-3xl font-semibold tracking-tight text-ink"><CountUp value={s ? s.exposure : null} prefix="₹" className="font-mono tabular-nums" /></span><p className="mt-1 text-xs text-slate-500">{s ? `${s.openPositions} open · ${s.pendingEntries} pending` : "—"}</p></HeroCell>
         <HeroCell title="Drawdown"><span className={cn("text-3xl font-semibold tracking-tight", currentDrawdownR(curve) > 0 ? "text-rose-500" : "text-ink")}><CountUp value={out.loaded ? currentDrawdownR(curve) : null} decimals={2} suffix=" R" className="font-mono tabular-nums" /></span><p className="mt-1 text-xs text-slate-500">from the closed-trade peak</p></HeroCell>
-        <HeroCell title="Regime"><RegimeBadge /></HeroCell>
+        <HeroCell wide title="Regime"><RegimeBadge /></HeroCell>
       </section>
 
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -94,8 +94,8 @@ export default function DashboardPage() {
   );
 }
 
-function HeroCell({ title, tip, children }: { title: string; tip?: string; children: React.ReactNode }) {
-  const body = <div className="px-4 py-4 sm:px-5"><p className="mb-1.5 text-[11px] font-mono uppercase tracking-wider text-slate-500">{title}</p>{children}</div>;
+function HeroCell({ title, tip, wide = false, children }: { title: string; tip?: string; wide?: boolean; children: React.ReactNode }) {
+  const body = <div className={cn("border-b border-slate-200/80 px-4 py-3 sm:px-5 sm:py-4 lg:border-b-0", wide && "col-span-2 lg:col-span-1")}><p className="mb-1.5 text-[11px] font-mono uppercase tracking-wider text-slate-500">{title}</p>{children}</div>;
   return tip ? <Tip text={tip}>{body}</Tip> : body;
 }
 
