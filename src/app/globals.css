@@ -217,3 +217,19 @@ html.dark body { background-image: linear-gradient(rgba(255,255,255,.018) 1px, t
 .tbl-scroll thead th { position: sticky; top: 0; z-index: 1; background: var(--th-bg, #fff); }
 html.dark .tbl-scroll thead th { --th-bg: #0C0F15; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+
+/* ── Light theme, toned for the cockpit palette ──
+   The teal / coral used as TEXT on white must be darker than the dark-theme values to keep contrast (>= 4.5:1). Surfaces stay white on a cool grey page with hairline borders. */
+html:not(.dark) { --background: #F3F5F8; --foreground: #0E1520; }
+html:not(.dark) .text-emerald-500, html:not(.dark) .text-emerald-600, html:not(.dark) .text-royal-500, html:not(.dark) .text-royal-600 { color: #00775D; }
+html:not(.dark) .hover\:text-royal-600:hover { color: #005E4A; }
+html:not(.dark) .text-rose-500, html:not(.dark) .text-rose-600 { color: #C92A39; }
+html:not(.dark) .text-amber-500 { color: #A15C00; }
+html:not(.dark) .bg-royal-600, html:not(.dark) .hover\:bg-royal-600:hover { background-color: #008F70; }
+html:not(.dark) .border-slate-200\/80 { border-color: #E1E6ED; }
+html:not(.dark) .divide-slate-200\/60 > :not([hidden]) ~ :not([hidden]) { border-color: #EAEEF3; }
+html:not(.dark) .bg-slate-50 { background-color: #F6F8FA; }
+html:not(.dark) .hover\:bg-slate-50:hover { background-color: #F1F4F7; }
+html:not(.dark) .tbl-scroll thead th { --th-bg: #F6F8FA; }
+html:not(.dark) .text-slate-400 { color: #6B7788; }
