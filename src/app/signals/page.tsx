@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState } from "react";
 import { useLoaded } from "@/components/trading/hooks";
 import { Chip, DataBanner, Empty, LevelBar, PageHeader, Skeleton, SourceBadge, card } from "@/components/trading/ui";
@@ -44,6 +45,7 @@ function SignalCard({ d }: { d: DecisionSummary }) {
         <Field k="Quantity" v={d.plannedQuantity ?? "—"} /><Field k="Max loss" v={d.plannedMaxLossAmount ? inr(Number(d.plannedMaxLossAmount)) : "—"} /><Field k="Risk : reward" v={d.riskReward ? `1 : ${d.riskReward}` : "—"} />
         <Field k="Confidence" v={d.confidenceScore ? `${Math.round(Number(d.confidenceScore) * 100)}%` : "—"} /><Field k="Source trust" v={d.sourceTrustTier?.replace("TIER_", "Tier ") ?? "—"} /><Field k="Notional" v={d.plannedNotional ? inr(Number(d.plannedNotional)) : "—"} />
       </dl>
+      <p className="mt-4 border-t border-slate-100 pt-3 text-xs"><Link href={`/decision/${d.id}`} className="font-medium text-royal-600 hover:underline">Why this view? Open the decision card</Link></p>
     </article>
   );
 }

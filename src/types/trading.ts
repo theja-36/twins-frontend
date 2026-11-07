@@ -61,3 +61,17 @@ export interface ProviderHealth { provider: string; status: SourceStatus; reason
 export interface SourceHealthProfile { generatedAt: string; overall: SourceStatus; passLogAvailable: boolean; counts: Record<SourceStatus, number>; providers: ProviderHealth[] }
 export interface ReadinessItem { id: string; title: string; status: "pass" | "fail" | "info" | "manual"; blocking: boolean; detail: string }
 export interface Readiness { readyToEnable: boolean; enabledNow: boolean; blockers: string[]; items: ReadinessItem[] }
+
+/** The backend's read-only explainable decision card (GET risk/decisions/:id/decision-card). Codes and numbers only. */
+export interface DecisionCardData {
+  format: string; riskDecisionId: string; decisionVersion: number | null; runId: string | null;
+  headline: { assessment: string; decidedBy: string; score: number | null; halts: boolean; haltReason: string };
+  agents: Array<{ agentId: string; verdict: string; status: string; confidence: number | null; weight: number; required: boolean; scored: boolean; reasonCodes: string[]; errorCode: string | null }>;
+  blockers: Array<{ agentId: string; findingCodes: string[] }>;
+  unavailable: Array<{ agentId: string; status: string; errorCode: string | null; required: boolean }>;
+  closeCalls: Array<{ rule: string; threshold: number; value: number; met: boolean; margin: number }>;
+  sizing: { status: string; reasonCode: string | null; quantity: number; maxLossPercent: number | null; riskReward: number | null; trustTier: string | null } | null;
+  sourceHealth: { overall: string; notUsable: Array<{ provider: string; status: string; reasons: string[] }> } | null;
+  statements: string[];
+  grantsApproval: false;
+}
