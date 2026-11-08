@@ -11,11 +11,13 @@ type Tab = "why" | "size" | "stop" | "risk" | "life";
 export default function DecisionDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params), [tab, setTab] = React.useState<Tab>("why");
   return (
+    <>
+    <PageHeader title="Decision Detail" description="One decision: why it was made, the size it permits, its stop-loss, risk and history." />
     <Data def={EP.decisions} what="decision">{(ds) => {
       const d = ds.find((x) => x.id === id);
       if (!d) return <EmptyState title="Decision not found">No decision with this id is visible to you.</EmptyState>;
       return <>
-        <PageHeader title={d.subject} description={d.headline} badges={<><DecisionBadge outcome={d.outcome} /><WorkflowBadge state={d.workflowState} />{d.risk && <RiskBadge verdict={d.risk.verdict} />}<ProvenanceBadge kind={d.dataSource === "FIXTURE" ? "FIXTURE" : "LIVE"} /></>} actions={<Link href="/decisions" className="text-sm text-accent underline">All decisions</Link>} />
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div className="min-w-0"><h2 className="text-lg font-semibold tracking-tight text-fg">{d.subject}</h2><p className="mt-1 text-sm text-fg-muted">{d.headline}</p><div className="mt-2 flex flex-wrap gap-1.5"><DecisionBadge outcome={d.outcome} /><WorkflowBadge state={d.workflowState} />{d.risk && <RiskBadge verdict={d.risk.verdict} />}<ProvenanceBadge kind={d.dataSource === "FIXTURE" ? "FIXTURE" : "LIVE"} /></div></div><Link href="/decisions" className="text-sm text-accent underline">All decisions</Link></div>
         <div className="space-y-4">
           <Banner tone="info" title="Outcome and workflow are separate">Outcome: <b>{d.outcome}</b> (what the engine concluded). Workflow: <b>{d.workflowState}</b> (where it is in human review). Nothing here has been executed.</Banner>
           {d.invalidated && <Banner tone="bad" title="Invalidated">Reason: {d.invalidated.reasonCode} at {dateTime(d.invalidated.at)}.</Banner>}
@@ -36,5 +38,6 @@ export default function DecisionDetail({ params }: { params: Promise<{ id: strin
           <DisabledByDesign title="Approval is not offered on this screen">Approval needs an authenticated user and a published approval contract. Neither exists yet; see the Approval Centre.</DisabledByDesign>
         </div></>;
     }}</Data>
+    </>
   );
 }

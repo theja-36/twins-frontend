@@ -12,7 +12,7 @@ function Shell({ icon, title, children, tone = "mute", actions }: { icon: React.
   return (
     <div role={tone === "bad" ? "alert" : "status"} className="flex flex-col items-center gap-2 px-4 py-10 text-center">
       <div className={cn("grid h-10 w-10 place-items-center rounded-full border", tone === "bad" ? "border-neg/30 text-neg" : tone === "warn" ? "border-warn/30 text-warn" : "border-line text-fg-muted")} aria-hidden>{icon}</div>
-      <h3 className="text-sm font-semibold text-fg">{title}</h3>
+      <h2 className="text-sm font-semibold text-fg">{title}</h2>
       {children ? <div className="max-w-md text-sm text-fg-muted">{children}</div> : null}
       {actions ? <div className="mt-1 flex gap-2">{actions}</div> : null}
     </div>

@@ -9,7 +9,7 @@
   color-scheme: dark;
   --bg: 9 12 17; --surface: 15 19 26; --surface-2: 20 25 34; --surface-3: 27 33 44;
   --line: 34 42 54; --line-strong: 48 58 74;
-  --fg: 230 234 241; --fg-muted: 154 164 181; --fg-faint: 112 122 140;
+  --fg: 230 234 241; --fg-muted: 154 164 181; --fg-faint: 136 146 164;
   --accent: 124 156 255; --accent-soft: 124 156 255;
   --pos: 52 196 141; --pos-soft: 52 196 141; --neg: 240 97 109; --neg-soft: 240 97 109; --warn: 232 176 75; --warn-soft: 232 176 75; --info: 107 167 240; --info-soft: 107 167 240;
   --focus: 143 180 255;
@@ -18,9 +18,9 @@ html.light {
   color-scheme: light;
   --bg: 244 246 249; --surface: 255 255 255; --surface-2: 247 249 252; --surface-3: 238 241 246;
   --line: 224 229 237; --line-strong: 203 211 224;
-  --fg: 16 22 34; --fg-muted: 82 94 114; --fg-faint: 120 132 152;
+  --fg: 16 22 34; --fg-muted: 82 94 114; --fg-faint: 98 110 130;
   --accent: 52 88 214; --accent-soft: 52 88 214;
-  --pos: 14 140 96; --pos-soft: 14 140 96; --neg: 200 48 62; --neg-soft: 200 48 62; --warn: 160 100 10; --warn-soft: 160 100 10; --info: 30 100 190; --info-soft: 30 100 190;
+  --pos: 6 104 68; --pos-soft: 6 104 68; --neg: 170 28 44; --neg-soft: 170 28 44; --warn: 120 70 0; --warn-soft: 120 70 0; --info: 20 78 160; --info-soft: 20 78 160;
   --focus: 52 88 214;
 }
 

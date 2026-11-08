@@ -66,10 +66,10 @@ export function Tabs<T extends string>({ value, onChange, tabs, label }: { value
     if (n >= 0) { e.preventDefault(); onChange((tabs[n] as { value: T }).value); refs.current[n]?.focus(); }
   };
   return (
-    <div role="tablist" aria-label={label} className="flex gap-1 overflow-x-auto border-b border-line">
+    <div role="tablist" aria-label={label} className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line">
       {tabs.map((t, i) => (
         <button key={t.value} ref={(el) => { refs.current[i] = el; }} role="tab" type="button" id={`tab-${t.value}`} aria-selected={value === t.value} aria-controls={`panel-${t.value}`} tabIndex={value === t.value ? 0 : -1} onClick={() => onChange(t.value)} onKeyDown={(e) => onKey(e, i)}
-          className={cn("-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-medium", value === t.value ? "border-accent text-fg" : "border-transparent text-fg-muted hover:text-fg")}>{t.label}{t.count !== undefined ? <span className="num ml-1.5 text-xs text-fg-faint">{t.count}</span> : null}</button>
+          className={cn("shrink-0 border-b-2 px-3 py-2 text-sm font-medium", value === t.value ? "border-accent text-fg" : "border-transparent text-fg-muted hover:text-fg")}>{t.label}{t.count !== undefined ? <span className="num ml-1.5 text-xs text-fg-faint">{t.count}</span> : null}</button>
       ))}
     </div>
   );

@@ -56,3 +56,13 @@ describe("safety rules the UI must keep", () => {
   });
   it("no inline sizing arithmetic in pages (the frontend never computes authoritative size)", () => { for (const f of app) expect(readFileSync(f, "utf8"), f).not.toMatch(/riskPerLot\s*[*\/]|lots\s*\*\s*\w*(price|lot)/i); });
 });
+
+describe("accessibility regressions found in Stage 09 QA", () => {
+  it("the icon-only search button has an accessible name on mobile", () => { expect(readFileSync("src/ds/shell/Shell.tsx", "utf8")).toMatch(/sr-only sm:hidden">Search screens/); });
+  it("every page has an h1 even when its data is denied or unavailable (detail pages use a static header)", () => {
+    for (const f of ["src/app/decisions/[id]/page.tsx", "src/app/telegram/signals/[id]/page.tsx"]) expect(readFileSync(f, "utf8"), f).toMatch(/<PageHeader title="(Decision|Signal) Details?"/);
+  });
+  it("scrollable tables are keyboard-focusable regions", () => { expect(readFileSync("src/ds/table.tsx", "utf8")).toMatch(/role="region"[^>]*tabIndex=\{0\}/); });
+  it("state headings are h2 so the heading order never skips a level", () => { expect(readFileSync("src/ds/states.tsx", "utf8")).not.toMatch(/<h3/); });
+  it("dark and light faint-text tokens keep contrast (values verified with axe)", () => { const c = readFileSync("src/app/globals.css", "utf8"); expect(c).toContain("--fg-faint: 136 146 164"); expect(c).toContain("--fg-faint: 98 110 130"); });
+});

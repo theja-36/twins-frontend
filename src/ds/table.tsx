@@ -19,7 +19,7 @@ export function DataTable<R>({ rows, cols, rowKey, label, pageSize = 15, filterT
     <div className="space-y-2">
       {filterText && <div className="max-w-xs"><SearchInput value={q} onChange={(v) => { setQ(v); setPage(0); }} placeholder={`Filter ${label.toLowerCase()}`} label={`Filter ${label}`} /></div>}
       {sorted.length === 0 ? <EmptyState title={empty} /> : (
-        <div className="overflow-x-auto rounded-lg border border-line">
+        <div role="region" aria-label={`${label} (scrollable)`} tabIndex={0} className="overflow-x-auto rounded-lg border border-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">
           <table className="w-full min-w-[34rem] text-sm"><caption className="sr-only">{label}</caption>
             <thead className="sticky top-0 bg-surface-2 text-left"><tr>{cols.map((c) => {
               const active = sort?.key === c.key;

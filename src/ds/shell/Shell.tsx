@@ -42,7 +42,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <Badge tone="info" title="All execution in this app is simulated paper trading. Live execution is disabled.">PAPER</Badge>
             {DEMO && <ProvenanceBadge kind="DEMO" />}
-            <button type="button" onClick={() => setCmd(true)} className="flex items-center gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5 text-sm text-fg-muted hover:text-fg"><Search className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">Search</span><kbd className="num hidden rounded border border-line px-1 text-[10px] sm:inline">⌘K</kbd></button>
+            <button type="button" onClick={() => setCmd(true)} className="flex items-center gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5 text-sm text-fg-muted hover:text-fg"><Search className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">Search</span><span className="sr-only sm:hidden">Search screens</span><kbd aria-hidden className="num hidden rounded border border-line px-1 text-[10px] sm:inline">⌘K</kbd></button>
             <button type="button" aria-label={light ? "Switch to dark theme" : "Switch to light theme"} onClick={toggle} className="rounded-md p-2 text-fg-muted hover:bg-surface-2">{light ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>
           </div>
         </header>
