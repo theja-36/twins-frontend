@@ -6,9 +6,13 @@ import { Header } from "./Header";
 import { X } from "lucide-react";
 import { BackendBanner } from "./BackendBanner";
 import { PageTransition } from "@/components/motion/Motion";
+import { usePathname } from "next/navigation";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  // The Signal Studio prototype brings its own shell.
+  if (pathname === "/studio" || pathname.startsWith("/studio/")) return <>{children}</>;
 
   return (
     <div className="min-h-screen bg-canvas text-slate-900 flex flex-col antialiased selection:bg-royal-100 selection:text-royal-900">
