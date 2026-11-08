@@ -1,5 +1,5 @@
 import React from "react";
-import type { StopQuality, StudioSignal, Tone } from "./fixtures";
+import { agentShares, type StopQuality, type StudioSignal, type Tone } from "./fixtures";
 
 export function Chip({ tone = "mute", children }: { tone?: Tone; children: React.ReactNode }) {
   return <span className={`st-chip ${tone}`}>{children}</span>;
@@ -35,3 +35,15 @@ export function LevelLadder({ s }: { s: StudioSignal }) {
     </div>
   );
 }
+
+export function BullBar({ s }: { s: StudioSignal }) {
+  const sh = agentShares(s);
+  if (!sh) return <p className="st-sub" style={{ margin: 0 }}>No agent produced a scored view, so there is no bull/neutral/bear split.</p>;
+  return (
+    <div role="img" aria-label={`Bull ${sh.bull} percent, neutral ${sh.neutral} percent, bear ${sh.bear} percent`}>
+      <div className="st-bull"><i className="b" style={{ width: `${sh.bull}%` }} /><i className="n" style={{ width: `${sh.neutral}%` }} /><i className="r" style={{ width: `${sh.bear}%` }} /></div>
+      <div className="st-legend"><span>Bull <b>{sh.bull}%</b></span><span>Neutral <b>{sh.neutral}%</b></span><span>Bear <b>{sh.bear}%</b></span><span>(weight x confidence of scoring agents)</span></div>
+    </div>
+  );
+}
+export const money = (n: number): string => `₹${n.toLocaleString("en-IN")}`;

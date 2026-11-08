@@ -56,7 +56,7 @@
 .st-btn{border:0;border-radius:14px;padding:11px 18px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;text-decoration:none}
 .st-btn:hover{background:var(--brand-hi)}
 .st-btn.ghost{background:var(--soft);color:var(--ink)} .st-btn.ghost:hover{background:var(--lav)}
-.st-btn:disabled{opacity:.45;cursor:not-allowed;background:var(--soft);color:var(--ink2)}
+.st-btn:disabled{opacity:.75;cursor:not-allowed;background:var(--soft);color:var(--ink3)}
 .st-iconbtn{width:46px;height:46px;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center}
 .st-iconbtn:hover{background:var(--lav)}
 .st-seg{display:inline-flex;background:var(--surface);border-radius:99px;padding:4px;box-shadow:var(--shadow)}
@@ -81,8 +81,8 @@
 
 /* deck */
 .st-deckwrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
-.st-stage{position:relative;height:650px;display:flex;justify-content:center;padding-top:8px;touch-action:pan-y;user-select:none}
-.st-deckcard{position:absolute;top:8px;width:min(100%,520px);height:610px;background:var(--surface);border-radius:32px;box-shadow:var(--shadow),0 0 0 1px var(--line);padding:24px;display:flex;flex-direction:column;gap:16px;transform-origin:50% 100%;overflow:hidden}
+.st-stage{position:relative;height:740px;display:flex;justify-content:center;padding-top:8px;touch-action:pan-y;user-select:none}
+.st-deckcard{position:absolute;top:8px;width:min(100%,520px);height:700px;background:var(--surface);border-radius:32px;box-shadow:var(--shadow),0 0 0 1px var(--line);padding:24px;display:flex;flex-direction:column;gap:16px;transform-origin:50% 100%;overflow:hidden}
 .st-deckcard.back{pointer-events:none;color:transparent}
 .st-deckcard.back>*{opacity:0}
 .st-deckcard[data-active=true]{cursor:grab}
@@ -128,7 +128,7 @@
 .st-scrim{position:fixed;inset:0;background:rgba(27,22,51,.4);z-index:50}
 .st-panel{position:fixed;top:12px;right:12px;bottom:12px;width:min(480px,calc(100vw - 24px));background:var(--surface);border-radius:30px;z-index:51;overflow-y:auto;padding:26px;box-shadow:0 30px 80px -20px rgba(27,22,51,.45);display:flex;flex-direction:column;gap:16px;color:var(--ink)}
 .st-panel h2{font-size:23px;margin:0}
-.st-panel h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.st h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
 .st-close{position:absolute;top:18px;right:18px}
 .st-agent{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
 .st-agent:first-of-type{border-top:0}
@@ -169,8 +169,8 @@
   .st-levelnums strong em{display:block;margin:0}
   .st-stat{min-height:118px;padding:16px} .st-stat strong{font-size:38px}
   .st-card{padding:18px;border-radius:24px}
-  .st-stage{height:720px}
-  .st-deckcard{height:680px;padding:20px;border-radius:28px}
+  .st-stage{height:860px}
+  .st-deckcard{height:820px;padding:20px;border-radius:28px}
   .st-cardhead h3{font-size:23px}
   .st-panel{top:auto;left:8px;right:8px;bottom:8px;width:auto;max-height:88vh;border-radius:28px}
 }
@@ -182,3 +182,35 @@
   .st-table td:first-child{grid-column:1/-1}
 }
 @media (prefers-reduced-motion:reduce){.st *{transition:none!important;animation:none!important}}
+
+.st-skel{border-radius:26px;background:linear-gradient(90deg,#f1eefb,#fff,#f1eefb);background-size:200% 100%;animation:stsk 1.6s linear infinite}
+@keyframes stsk{to{background-position:-200% 0}}
+.st-statebar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.st-statebar button{border:0;border-radius:99px;padding:4px 10px;font-weight:700;font-size:12px;background:rgba(255,255,255,.7);color:var(--warn)}
+.st-statebar button[aria-pressed=true]{background:var(--warn);color:#fff}
+.st-fixture{flex-wrap:wrap}
+.st-bull{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--soft)}
+.st-bull i{display:block;height:100%}
+.st-bull .b{background:var(--ok)} .st-bull .n{background:#CFC8EA} .st-bull .r{background:var(--bad)}
+.st-legend{display:flex;gap:14px;font-size:12.5px;color:var(--ink2);margin-top:8px;flex-wrap:wrap} .st-legend b{color:var(--ink)}
+.st-kv{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px} .st-kv div{font-size:12.5px;color:var(--ink2)} .st-kv strong{display:block;color:var(--ink);font-size:15px;margin-top:2px}
+.st-actions{display:flex;gap:10px;flex-wrap:wrap}
+.st-panel{overscroll-behavior:contain}
+.st-tone-ok{color:var(--ok)} .st-tone-bad{color:var(--bad)}
+.st-qa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.st-qa a{background:var(--soft);border-radius:18px;padding:14px;text-decoration:none;color:var(--ink);font-weight:700;font-size:14px;display:flex;flex-direction:column;gap:4px} .st-qa a small{color:var(--ink2);font-weight:500;font-size:12px} .st-qa a:hover{background:var(--lav)}
+@media (max-width:860px){.st-qa{grid-template-columns:1fr 1fr}}
+.st-disc{background:var(--soft);border-radius:18px;padding:0 14px} .st-disc summary{cursor:pointer;font-weight:700;font-size:13.5px;padding:12px 0;list-style:none;display:flex;justify-content:space-between} .st-disc summary::after{content:"+";font-size:18px;color:var(--ink3)} .st-disc[open] summary::after{content:"–"} .st-disc summary::-webkit-details-marker{display:none} .st-discbody{padding:0 0 12px}
+.st-panel .st-close{position:sticky;top:0;align-self:flex-end;margin:0 0 -48px;z-index:2}
+.st-panel > button + div{padding-right:54px}
+.st-filters{padding:0 2px}
+
+.st-panel{padding:0;gap:0;overflow:hidden}
+.st-panel-head{display:flex;justify-content:flex-end;padding:14px 16px 6px;flex:none;background:var(--surface)}
+.st-panel-body{overflow-y:auto;overscroll-behavior:contain;padding:4px 26px 26px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0}
+.st-panel .st-close{position:static;margin:0}
+.st-panel > button + div{padding-right:0}
+@media (max-width:860px){.st-panel-body{padding:4px 20px 22px}}
+.st-fdisc{background:var(--surface);box-shadow:var(--shadow)} .st-fdisc summary{padding:14px 0}
+.st-fdisc .st-discbody{padding-bottom:14px}
+.st-levelnums strong em{display:block;margin:0}

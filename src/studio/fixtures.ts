@@ -12,7 +12,10 @@ export interface StudioSignal {
   entry: { kind: "above" | "at"; price: number }; stop: number | null; targets: number[];
   stopQuality: StopQuality; stopNote: string; status: "APPROVED_FOR_REVIEW" | "INSUFFICIENT_EVIDENCE" | "REJECTED" | "EXPIRED";
   rationale: string; blockers: Blocker[]; freshness: { state: "fresh" | "stale" | "unavailable"; note: string };
-  analysis: { assessment: string; decidedBy: string; agents: Array<{ id: string; verdict: "supportive" | "neutral" | "caution" | "adverse" | "unavailable"; note: string }>; closeCalls: string[] };
+  analysis: { assessment: string; decidedBy: string; agents: Array<{ id: string; verdict: "supportive" | "neutral" | "caution" | "adverse" | "unavailable"; note: string; weight: number; confidence: number | null; codes: string[] }>; closeCalls: string[] };
+  decisionId: string; market: "NSE" | "BSE"; basisInferred: boolean; approval: string;
+  sizing: { sized: boolean; qty?: number; maxLoss?: number; rr?: number; reason?: string; trustTier: "UNKNOWN" };
+  sourceHealth: Array<{ name: string; status: "OK" | "STALE" | "MISSING" }>;
 }
 
 const B = {
@@ -27,7 +30,7 @@ const agents = (a: ReturnType<typeof AG>, b: ReturnType<typeof AG>, c: ReturnTyp
   { id: "technical", ...a }, { id: "news", ...b }, { id: "risk-context", ...c },
 ];
 
-export const SIGNALS: StudioSignal[] = [
+const BASE: Array<Omit<StudioSignal, "decisionId" | "market" | "basisInferred" | "approval" | "sizing" | "sourceHealth" | "analysis"> & { analysis: { assessment: string; decidedBy: string; agents: Array<{ id: string; verdict: "supportive" | "neutral" | "caution" | "adverse" | "unavailable"; note: string }>; closeCalls: string[] } }> = [
   { id: "f1", origin: "telegram", channel: "***2544", receivedAt: "09:42", ageMin: 6, underlying: "NIFTY", strike: 24500, optionType: "CE", expiry: "12 Nov", side: "BUY",
     entry: { kind: "above", price: 118 }, stop: 96, targets: [140, 165], stopQuality: "BASIS_UNSPECIFIED", stopNote: "Stop 96 is below 10% of the strike, so it is probably a premium level, but the message does not say so.",
     status: "INSUFFICIENT_EVIDENCE", rationale: "A clean long entry with a stop and two targets. It cannot be sized until the stop basis and live option prices are known.",
@@ -60,10 +63,45 @@ export const SIGNALS: StudioSignal[] = [
     analysis: { assessment: "Not assessed", decidedBy: "catalog check", agents: agents(AG("unavailable", "Not run"), AG("unavailable", "Not run"), AG("unavailable", "Not run")), closeCalls: ["Catalog: unsupported index"] } },
 ];
 
+const SH = (q: "OK" | "STALE" | "MISSING", i: "OK" | "STALE" | "MISSING" = "OK") => [{ name: "Option quotes", status: q }, { name: "Index prices", status: i }];
+const EXTRA: Record<string, Pick<StudioSignal, "decisionId" | "market" | "basisInferred" | "approval" | "sizing" | "sourceHealth">> = {
+  f1: { decisionId: "3f1c9a2e-7b44-4d0a-9c1e-5a8d2b6e1f01", market: "NSE", basisInferred: false, approval: "Not eligible yet", sizing: { sized: false, reason: "Stop basis not stated", trustTier: "UNKNOWN" }, sourceHealth: SH("MISSING") },
+  f2: { decisionId: "8be2d410-65aa-4c27-8f3d-0c9a71e4b202", market: "NSE", basisInferred: true, approval: "Waiting for a decision in the bot", sizing: { sized: true, qty: 150, maxLoss: 5700, rr: 2.1, trustTier: "UNKNOWN" }, sourceHealth: SH("OK") },
+  f3: { decisionId: "c07a55f3-19de-48b1-a6c4-7d2e90b3c303", market: "BSE", basisInferred: false, approval: "Not eligible yet", sizing: { sized: false, reason: "Contract not identified", trustTier: "UNKNOWN" }, sourceHealth: SH("MISSING") },
+  f4: { decisionId: "d41b8e62-0f37-4a95-b2d8-3e6c1a7f4404", market: "NSE", basisInferred: false, approval: "Rejected by rule (no approval record)", sizing: { sized: false, reason: "No stop-loss", trustTier: "UNKNOWN" }, sourceHealth: SH("OK", "STALE") },
+  f5: { decisionId: "e92c3a77-5b18-4d6f-8a01-9f4d2c8e5505", market: "NSE", basisInferred: false, approval: "Expired before a decision", sizing: { sized: true, qty: 150, maxLoss: 5700, rr: 1.9, trustTier: "UNKNOWN" }, sourceHealth: SH("STALE", "STALE") },
+  f6: { decisionId: "fa5d4b88-2c69-4e30-9b12-1a7e3d9f6606", market: "NSE", basisInferred: false, approval: "Not eligible", sizing: { sized: false, reason: "Instrument not supported", trustTier: "UNKNOWN" }, sourceHealth: SH("MISSING", "MISSING") },
+};
+const W: Record<string, [number, number | null, string[]]> = { technical: [0.4, 62, ["trend.above_mean"]], news: [0.2, null, []], "risk-context": [0.4, 70, ["budget.inside"]] };
+export const SIGNALS: StudioSignal[] = BASE.map((b) => {
+  const e = EXTRA[b.id] as NonNullable<(typeof EXTRA)[string]>;
+  const agents = b.analysis.agents.map((a) => { const w = W[a.id] ?? [0.3, null, []]; const scored = a.verdict !== "unavailable"; return { ...a, weight: w[0], confidence: scored ? (w[1] ?? 50) : null, codes: scored ? w[2] : [] }; });
+  const out: StudioSignal = { ...b, ...e, analysis: { ...b.analysis, agents } };
+  if (b.id === "f2") out.stopNote = "Premium basis applied from the channel's default. The message itself did not say so.";
+  return out;
+});
+
+/** Same arithmetic as the production decision card: weight x confidence of scoring agents. */
+export function agentShares(s: StudioSignal): { bull: number; neutral: number; bear: number } | null {
+  const sc = s.analysis.agents.filter((a) => a.confidence !== null);
+  const w = (a: (typeof sc)[number]): number => a.weight * ((a.confidence ?? 0) / 100);
+  const tot = sc.reduce((n, a) => n + w(a), 0);
+  if (tot === 0) return null;
+  const part = (f: (v: string) => boolean): number => Math.round((sc.filter((a) => f(a.verdict)).reduce((n, a) => n + w(a), 0) / tot) * 100);
+  return { bull: part((v) => v === "supportive"), neutral: part((v) => v === "neutral"), bear: part((v) => v === "caution" || v === "adverse") };
+}
+
 export const OVERVIEW = {
   asOf: "Mon 09 Nov 2026 · 09:48 IST",
   safety: [["Engine", "off"], ["Shadow", "on"], ["Live trading", "off"], ["Paper", "off"]] as const,
   counts: { today: 14, ready: 1, blocked: 9, channels: 3 },
+  portfolio: { capital: null as number | null, paperPnl: 4180, dayPnl: -620, exposure: 38200, drawdownR: 1.4, closedTrades: 9 },
+  positions: [
+    { symbol: "BANKNIFTY 51500 CE", side: "BUY", qty: 150, entry: 205, last: 214, pnl: 1350, state: "OPEN" },
+    { symbol: "NIFTY 24400 PE", side: "BUY", qty: 225, entry: 88, last: 81, pnl: -1575, state: "OPEN" },
+    { symbol: "NIFTY 24600 CE", side: "BUY", qty: 225, entry: 104, last: null as number | null, pnl: 0, state: "PENDING_ENTRY" },
+  ],
+  regime: { label: "Trending, moderate volatility", note: "Sample until a regime route exists" },
   perDay: [["Tue", 8], ["Wed", 12], ["Thu", 9], ["Fri", 14], ["Sat", 0], ["Sun", 0], ["Mon", 6]] as const,
   channels: [
     { name: "***2544", messages: 109, last: "6 min ago", claims: 100, state: "live" },

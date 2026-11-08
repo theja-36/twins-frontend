@@ -3,17 +3,27 @@ import React from "react";
 import { animate, motion, useMotionValue, useReducedMotion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, Layers, List } from "lucide-react";
 import { SIGNALS, type StudioSignal } from "./fixtures";
+import { StateGate } from "./state";
 import { SignalDetail } from "./SignalDetail";
-import { Chip, FRESH, LevelLadder, STATUS, STOP, ageText, title } from "./ui";
+import { Chip, FRESH, LevelLadder, STATUS, STOP, ageText, money, title } from "./ui";
 
 const SHOWN_BEHIND = 3;
 const SWIPE_PX = 90, SWIPE_VELOCITY = 500;
 
 /** Navigation only. Swiping, dragging, the arrow buttons and the keys move between cards; nothing here approves, rejects or dismisses a signal. */
-export function Deck({ signals = SIGNALS }: { signals?: StudioSignal[] }) {
+const FILTERS = [["all", "All"], ["APPROVED_FOR_REVIEW", "Ready"], ["INSUFFICIENT_EVIDENCE", "Held back"], ["REJECTED", "Rejected"], ["EXPIRED", "Expired"]] as const;
+
+export function Deck() {
+  return <StateGate what="decisions"><DeckInner /></StateGate>;
+}
+
+function DeckInner({ all = SIGNALS }: { all?: StudioSignal[] }) {
+  const [filter, setFilter] = React.useState<string>("all");
+  const signals = all.filter((x) => filter === "all" || x.status === filter);
   const reduce = useReducedMotion();
   const [view, setView] = React.useState<"deck" | "list">("deck");
   const [i, setI] = React.useState(0);
+  React.useEffect(() => setI(0), [filter]);
   const [open, setOpen] = React.useState<StudioSignal | null>(null);
   const n = signals.length;
   const go = React.useCallback((d: number): void => setI((c) => Math.min(n - 1, Math.max(0, c + d))), [n]);
@@ -32,8 +42,10 @@ export function Deck({ signals = SIGNALS }: { signals?: StudioSignal[] }) {
         </div>
         <span className="st-chip mute">{n} signals · newest first</span>
       </div>
+      <div className="st-filters" role="group" aria-label="Status">{FILTERS.map(([k, l]) => <button key={k} className="st-fbtn" aria-pressed={filter === k} onClick={() => setFilter(k)}>{l}</button>)}</div>
+      {n === 0 ? <div className="st-card" style={{ textAlign: "center" }}><h2>No decisions match this filter</h2><p className="st-sub" style={{ margin: 0 }}>Choose another status. This is an empty result, not an error.</p></div> : null}
 
-      {view === "deck" ? (
+      {n === 0 ? null : view === "deck" ? (
         <div className="st-deckwrap">
           <div>
             <div className="st-stage" tabIndex={0} role="group" aria-roledescription="carousel" aria-label="Decision deck. Left and right arrow keys move between cards. Enter opens the full analysis." onKeyDown={onKey}>
@@ -59,12 +71,12 @@ export function Deck({ signals = SIGNALS }: { signals?: StudioSignal[] }) {
       ) : (
         <div className="st-card"><div className="st-tablewrap">
           <table className="st-table"><caption className="sr-only" style={{ position: "absolute", left: -9999 }}>All signals</caption>
-            <thead><tr><th>Instrument</th><th>Side</th><th>Origin</th><th>Status</th><th>Entry / Stop</th><th>Stop quality</th><th>Received</th></tr></thead>
+            <thead><tr><th>Instrument</th><th>Side</th><th>Origin</th><th>Status</th><th>Entry / Stop</th><th>Stop quality</th><th>Received</th><th>Approval</th></tr></thead>
             <tbody>{signals.map((s) => (
               <tr key={s.id} onClick={() => setOpen(s)}>
                 <td data-label="Instrument"><button className="st-link" onClick={(e) => { e.stopPropagation(); setOpen(s); }}>{title(s)}</button><div className="st-sub" style={{ margin: 0, fontSize: 12 }}>{s.expiry ?? "no expiry"}</div></td>
                 <td data-label="Side">{s.side}</td><td data-label="Origin">Telegram · {s.channel}</td><td data-label="Status"><Chip tone={STATUS[s.status].tone}>{STATUS[s.status].label}</Chip></td>
-                <td className="num" data-label="Entry / Stop">{s.entry.price} / {s.stop ?? "—"}</td><td data-label="Stop quality"><Chip tone={STOP[s.stopQuality].tone}>{STOP[s.stopQuality].label}</Chip></td><td className="num" data-label="Received">{s.receivedAt} · {ageText(s.ageMin)}</td>
+                <td className="num" data-label="Entry / Stop">{s.entry.price} / {s.stop ?? "—"}</td><td data-label="Stop quality"><Chip tone={STOP[s.stopQuality].tone}>{STOP[s.stopQuality].label}</Chip></td><td className="num" data-label="Received">{s.receivedAt} · {ageText(s.ageMin)}</td><td data-label="Approval">{s.approval}</td>
               </tr>))}</tbody></table></div></div>
       )}
       {open ? <SignalDetail s={open} modal onClose={() => setOpen(null)} /> : null}
@@ -113,8 +125,10 @@ function CardFront({ s, onOpen }: { s: StudioSignal; onOpen: () => void }) {
       </div>
       <p className="st-why">{s.rationale}</p>
       <div className="st-facts">
-        <div className="st-fact"><b>Stop quality</b><Chip tone={STOP[s.stopQuality].tone}>{STOP[s.stopQuality].label}</Chip></div>
+        <div className="st-fact"><b>Stop quality</b><Chip tone={STOP[s.stopQuality].tone}>{STOP[s.stopQuality].label}</Chip>{s.basisInferred ? <> <Chip tone="info">Premium inferred</Chip></> : null}</div>
         <div className="st-fact"><b>Main blocker</b>{topBlocker ? <strong>{topBlocker.text}</strong> : <strong>None recorded</strong>}</div>
+        <div className="st-fact"><b>Proposed size</b>{s.sizing.sized ? <strong>{s.sizing.qty} qty · max loss {money(s.sizing.maxLoss ?? 0)}</strong> : <strong>Not sized</strong>}{s.sizing.sized ? null : <span> {s.sizing.reason}</span>}</div>
+        <div className="st-fact"><b>Approval</b><strong>{s.approval}</strong></div>
         <div className="st-fact" style={{ gridColumn: "1 / -1" }}><b>Data freshness</b><Chip tone={FRESH[s.freshness.state].tone}>{FRESH[s.freshness.state].label}</Chip> {s.freshness.note}</div>
       </div>
       <div className="st-cardfoot">
