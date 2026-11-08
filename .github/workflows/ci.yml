@@ -31,3 +31,5 @@ jobs:
         run: |
           if grep -rIl "ci-sentinel-token-7f3a9c1e5b2d4086" .next/static; then echo "token value found in client bundle"; exit 1; fi
           echo "token value absent from client bundle"
+      - name: No demo fixture data or key material in the client bundle (npm run check:bundle)
+        run: npm run check:bundle
