@@ -24,7 +24,7 @@ export function DataTable<R>({ rows, cols, rowKey, label, pageSize = 15, filterT
             <thead className="sticky top-0 bg-surface-2 text-left"><tr>{cols.map((c) => {
               const active = sort?.key === c.key;
               return <th key={c.key} scope="col" aria-sort={active ? (sort!.dir === 1 ? "ascending" : "descending") : undefined} className={cn("label whitespace-nowrap px-3 py-2 font-medium", c.align === "right" && "text-right", c.hideBelow === "sm" && "hidden sm:table-cell", c.hideBelow === "md" && "hidden md:table-cell")}>
-                {c.sort ? <button type="button" onClick={() => setSort(active && sort!.dir === -1 ? null : { key: c.key, dir: active ? -1 : 1 })} className="inline-flex items-center gap-1 rounded hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">{c.header}{active && (sort!.dir === 1 ? <ArrowUp className="h-3 w-3" aria-hidden /> : <ArrowDown className="h-3 w-3" aria-hidden />)}</button> : c.header}
+                {c.sort ? <button type="button" onClick={() => setSort(active && sort!.dir === -1 ? null : { key: c.key, dir: active ? -1 : 1 })} className="inline-flex min-h-6 min-w-6 items-center gap-1 rounded hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">{c.header}{active && (sort!.dir === 1 ? <ArrowUp className="h-3 w-3" aria-hidden /> : <ArrowDown className="h-3 w-3" aria-hidden />)}</button> : c.header}
               </th>; })}</tr></thead>
             <tbody className="divide-y divide-line">{slice.map((r) => (
               <tr key={rowKey(r)} onClick={onRow ? () => onRow(r) : undefined} className={cn("bg-surface", onRow && "cursor-pointer hover:bg-surface-2")}>
