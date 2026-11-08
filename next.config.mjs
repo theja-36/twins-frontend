@@ -1,6 +1,5 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import { studioRedirects } from "./src/studio/routes.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,15 +8,16 @@ const __dirname = path.dirname(__filename);
 const nextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: __dirname,
-  // Always defined at build time ("0" unless explicitly "1") so the bundler can drop the Studio fixtures chunk from normal builds.
-  env: { NEXT_PUBLIC_STUDIO_FIXTURES: process.env.NEXT_PUBLIC_STUDIO_FIXTURES === "1" ? "1" : "0" },
-  // pages that showed sample data were removed; their routes now lead to the real equivalent
+  // Always defined at build time ("0" unless explicitly "1"): DEMO mode shows clearly labelled development fixtures. Without it the fixtures chunk is not reachable.
+  env: { NEXT_PUBLIC_TWINS_DEMO: process.env.NEXT_PUBLIC_TWINS_DEMO === "1" ? "1" : "0" },
+  // Routes of the classic app and the Studio prototype lead to their Stage 09 equivalents (no link is left broken).
   async redirects() {
+    const r = (source, destination) => ({ source, destination, permanent: false });
     return [
-      { source: "/activity", destination: "/notifications", permanent: false },
-      { source: "/snapshots", destination: "/market", permanent: false },
-      // Studio transition: OFF unless the build sets TWINS_UI=studio (see src/studio/routes.mjs).
-      ...studioRedirects(process.env.TWINS_UI === "studio"),
+      r("/signals", "/telegram/history"), r("/claims", "/telegram/intake"), r("/channels", "/telegram/channels"), r("/intake", "/telegram/intake"), r("/history", "/telegram/history"),
+      r("/agents", "/research/agents"), r("/decision/:id", "/decisions/:id"), r("/positions", "/execution/positions"), r("/pnl", "/performance/pnl"),
+      r("/activity", "/notifications"), r("/snapshots", "/market"),
+      r("/studio", "/"), r("/studio/deck", "/decisions"), r("/studio/signals", "/telegram/intake"), r("/studio/channels", "/telegram/channels"), r("/studio/market", "/market"), r("/studio/portfolio", "/execution/paper"), r("/studio/settings", "/settings"),
     ];
   },
 };

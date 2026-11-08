@@ -1,87 +1,39 @@
 "use client";
-
 import React from "react";
-import { useLoaded } from "@/components/trading/hooks";
-import { Chip, Dot, Empty, PageHeader, Pnl, Skeleton, SourceBadge, card } from "@/components/trading/ui";
-import { duration, px, signed } from "@/services/trading";
-import { getMarketSnapshot, getSourceHealth } from "@/services/system";
-import type { SourceStatus } from "@/types/trading";
-import { CalendarPanel, NewsPanel } from "@/components/trading/Panels";
-import { MarketHoursWidget, RegimeWidget } from "@/components/trading/Widgets";
-import { cn } from "@/lib/utils";
-
-const kb = (b: number): string => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1)} MB` : b >= 1000 ? `${Math.round(b / 1000)} kB` : `${b} B`);
-const FRESH_LIMIT = 120;
-const HEALTH_TONE: Record<SourceStatus, "ok" | "warn" | "bad" | "off"> = { OK: "ok", DEGRADED: "warn", STALE: "warn", FAILING: "bad", MISSING: "off", INVALID: "bad" };
-const REASON_TEXT: Record<string, string> = {
-  file_missing: "no data file yet", file_unreadable: "file could not be read", data_stale: "data is older than its limit", export_stale: "exporter has not rewritten it recently",
-  last_pass_failed: "last exporter pass failed", repeated_failures: "failed on several passes in a row", last_pass_skipped: "exporter skipped it on purpose (for example stale inputs)", no_pass_logged: "no exporter pass on record", unrecognized: "unrecognised reason code",
-};
-const reasonText = (r: string): string => REASON_TEXT[r] ?? r.replaceAll("_", " ");
+import { EP } from "@/api/registry";
+import { Data } from "@/ds/Data";
+import { Badge, Card, CardBody, CardHeader, Metric, MetricGrid, PageHeader } from "@/ds/primitives";
+import { DataTable } from "@/ds/table";
+import { Banner, PartialBanner } from "@/ds/states";
+import { SRC_TONE, ageText } from "@/lib/view";
+import { polarityTone, polarityWord, clusterTitle, orderClusters, statusNote } from "@/lib/news";
+import { sessionAt, formatCountdown } from "@/lib/marketHours";
+import { price, pct } from "@/lib/fmt";
 
 export default function MarketPage() {
-  const { loaded, loading } = useLoaded(getMarketSnapshot, 15_000);
-  const m = loaded?.data;
-  const { loaded: health } = useLoaded(getSourceHealth, 30_000);
-  const h = health?.data;
+  const [now, setNow] = React.useState<Date | null>(null);
+  React.useEffect(() => { setNow(new Date()); }, []);
+  const ses = now ? sessionAt(now) : null;
   return (
-    <div className="space-y-4">
-      <PageHeader title="Market data" subtitle="What the Kite feed last published, and the data files the research agents can read. Nothing here is a trading signal." right={<SourceBadge loading={loading} />} />
-      {!m ? <Skeleton h={220} /> : (
-        <>
-          <section>
-            <h2 className="mb-3 text-sm font-semibold text-ink">Index prices</h2>
-            {!m.visible ? <Empty title="The snapshot folder is not visible" hint="The API cannot see /var/lib/twins-snapshots. Check the read-only mount." /> : m.indices.length === 0 ? <Empty title="No index prices yet" hint="They appear after the Kite feed has run (it needs a fresh Kite login on a trading day)." /> : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{m.indices.map((i) => {
-                const stale = i.ageSeconds === null || i.ageSeconds > FRESH_LIMIT;
-                return (
-                  <div key={`${i.market}:${i.symbol}`} className={cn(card, "p-5")}>
-                    <div className="flex items-start justify-between"><div><p className="text-[11px] font-mono uppercase tracking-wider text-slate-400">{i.market}</p><h3 className="text-lg font-semibold text-ink">{i.symbol}</h3></div><Chip kind={stale ? "PENDING" : "OPEN"}>{stale ? "stale" : "fresh"}</Chip></div>
-                    <p className="mt-3 font-mono text-3xl font-semibold tracking-tight text-ink">{px(i.level)}</p>
-                    <p className="mt-1 text-sm"><Pnl value={i.changePct1d}>{i.changePct1d === null ? "—" : `${signed(i.changePct1d)}%`}</Pnl><span className="text-slate-400"> vs previous close {px(i.previousClose)}</span></p>
-                    <p className="mt-3 text-xs text-slate-400">price is {i.ageSeconds === null ? "of unknown age" : duration(i.ageSeconds)} old</p>
-                  </div>);
-              })}</div>
-            )}
-          </section>
-
-          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4"><MarketHoursWidget /><RegimeWidget /><CalendarPanel /><NewsPanel /></div>
-
-          <div className="grid items-start gap-4 xl:grid-cols-2">
-          <section className={cn(card, "overflow-hidden")}>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-4"><div><h2 className="text-base font-semibold text-ink">Snapshot generation</h2><p className="mt-0.5 text-xs text-slate-500">Published by the feed as one all-or-nothing set. {m.quoteCount} quotes, {m.optionQuoteCount} option quotes.</p></div>
-              <span className="inline-flex items-center gap-2 text-sm"><Dot tone={m.generation?.status === "complete" ? "ok" : m.visible ? "warn" : "off"} /><b className="text-ink">{m.generation ? m.generation.status : "none"}</b>{m.generation?.id && <span className="font-mono text-xs text-slate-400">{m.generation.id}</span>}</span></div>
-            <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-sm"><thead><tr className="text-left text-[11px] font-mono uppercase tracking-wider text-slate-500"><th className="px-5 py-3">File</th><th className="px-5 py-3">Present</th><th className="px-5 py-3 text-right">Size</th><th className="px-5 py-3 text-right">Age</th></tr></thead>
-              <tbody>{m.files.map((f) => (<tr key={f.kind} className="border-t border-slate-50"><td className="px-5 py-3 font-mono text-[13px] text-ink">{f.kind}</td><td className="px-5 py-3"><Dot tone={f.present ? "ok" : "off"} /> <span className="text-slate-500">{f.present ? "yes" : "missing"}</span></td><td className="px-5 py-3 text-right font-mono text-slate-500">{f.present ? kb(f.bytes) : "—"}</td><td className="px-5 py-3 text-right font-mono text-slate-500">{f.ageSeconds === null ? "—" : duration(f.ageSeconds)}</td></tr>))}</tbody></table></div>
-          </section>
-
-          <section className={cn(card, "overflow-hidden")}>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-4">
-              <div><h2 className="text-base font-semibold text-ink">Source health</h2><p className="mt-0.5 text-xs text-slate-500">Whether each data source is current enough for the agents to use. Evidence only: it never approves or blocks a trade by itself.</p></div>
-              {h ? <span className="inline-flex items-center gap-2 text-sm"><Dot tone={HEALTH_TONE[h.overall]} /><b className="text-ink">Overall: {h.overall.toLowerCase()}</b></span> : null}
-            </div>
-            {!h ? <div className="p-5"><Skeleton h={120} /></div> : (
-              <ul className="divide-y divide-slate-50">{h.providers.map((p) => (
-                <li key={p.provider} className="flex flex-wrap items-start justify-between gap-3 px-5 py-3.5">
-                  <div className="flex items-start gap-3"><span className="mt-1"><Dot tone={HEALTH_TONE[p.status]} /></span><div><p className="font-mono text-[13px] text-ink">{p.provider}</p><p className="text-xs text-slate-400">{p.reasons.length ? p.reasons.map(reasonText).join("; ") : "current"}</p></div></div>
-                  <div className="text-right text-xs text-slate-500"><p><b className="text-ink">{p.status.toLowerCase()}</b>{p.usable ? "" : " · not used by agents"}</p><p className="text-slate-400">{p.dataAgeSeconds === null ? "data age unknown" : `data ${duration(p.dataAgeSeconds)} old`}{p.consecutiveFailures ? ` · ${p.consecutiveFailures} failed pass${p.consecutiveFailures === 1 ? "" : "es"} in a row` : ""}</p></div>
-                </li>))}</ul>
-            )}
-            {h && !h.passLogAvailable ? <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400">Exporter pass history is not available to the API, so failures are inferred from file age only.</p> : null}
-          </section>
-          </div>
-
-          <section className={cn(card, "overflow-hidden")}>
-            <div className="border-b border-slate-100 px-5 py-4"><h2 className="text-base font-semibold text-ink">Provider data files</h2><p className="mt-0.5 text-xs text-slate-500">News, sentiment, macro, calendar and market data for the research agents. Written by the provider exporter, which is off until the host allow-list is installed.</p></div>
-            <ul className="divide-y divide-slate-50">{m.providers.map((p) => (
-              <li key={p.name} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
-                <div className="flex items-center gap-3"><Dot tone={p.present ? "ok" : "off"} /><div><p className="font-mono text-[13px] text-ink">{p.name}</p><p className="text-xs text-slate-400">{p.present ? `${p.format ?? "?"} · ${p.source ?? "?"}` : "not exported yet"}</p></div></div>
-                <div className="text-right text-xs text-slate-500">{p.present ? <><p>{p.count ?? 0} item{p.count === 1 ? "" : "s"}</p><p className="text-slate-400">{p.ageSeconds === null ? "" : `${duration(p.ageSeconds)} old`}</p></> : <span className="text-slate-400">—</span>}</div>
-              </li>))}</ul>
-          </section>
-
-        </>
-      )}
-    </div>
+    <>
+      <PageHeader title="Market Overview" description="Index levels, data-source health and Telegram-channel commentary. Panels that depend on a source that is missing say so instead of showing placeholders." />
+      <div className="space-y-4">
+        <Card label="Session"><CardHeader title="Trading session" subtitle="Computed from the NSE calendar rule in IST" /><CardBody>{ses && <div className="flex flex-wrap items-baseline gap-3"><span className="text-lg font-semibold">{ses.label}</span><span className="num text-sm text-fg-muted">{ses.nextLabel} in {formatCountdown(ses.secondsToChange)}</span></div>}<p className="mt-2 text-xs text-fg-faint">Exchange holidays come from the holiday-calendar source below; if it is missing, this is a weekday/time rule only.</p></CardBody></Card>
+        <Card label="Indices"><CardHeader title="Indices" subtitle="From the latest exported snapshot" /><CardBody>
+          <Data def={EP.marketSnapshot} what="market snapshot" rows={3}>{(s) => s.indices.length === 0
+            ? <Banner tone="warn" title="No index levels">The snapshot has no index prices{s.visible ? "" : " (the snapshot is not visible)"}. Nothing is estimated in their place.</Banner>
+            : <MetricGrid cols={4}>{s.indices.map((i) => <Metric key={i.symbol} label={`${i.symbol} · ${i.market}`} value={price(String(i.level))} tone={i.changePct1d == null ? "mute" : i.changePct1d >= 0 ? "ok" : "bad"} sub={<>{i.changePct1d == null ? "change unavailable" : `${i.changePct1d >= 0 ? "▲" : "▼"} ${pct(i.changePct1d, 2)}`} · {ageText(i.ageSeconds)} old</>} />)}</MetricGrid>}</Data>
+        </CardBody></Card>
+        <Card label="Sources"><CardHeader title="Data-source health" subtitle="A missing or stale source lowers what the platform can claim" /><CardBody>
+          <Data def={EP.marketSources} what="source health" rows={4}>{(h) => <div className="space-y-3"><div className="flex flex-wrap items-center gap-2 text-sm">Overall <Badge tone={SRC_TONE[h.overall]}>{h.overall}</Badge></div>
+            <DataTable label="Providers" rows={h.providers} rowKey={(p) => p.provider} dense cols={[{ key: "p", header: "Source", render: (p) => p.provider }, { key: "s", header: "Status", render: (p) => <Badge tone={SRC_TONE[p.status]}>{p.status}</Badge> }, { key: "a", header: "Data age", align: "right", render: (p) => ageText(p.dataAgeSeconds), sort: (p) => p.dataAgeSeconds }, { key: "r", header: "Reasons", hideBelow: "sm", render: (p) => (p.reasons.length ? p.reasons.join("; ") : "—") }]} />
+            {h.providers.some((p) => p.provider === "economic-calendar" && !p.usable) && <PartialBanner missing="The economic calendar is not available, so event risk is unknown. The platform does not substitute a static calendar." />}</div>}</Data>
+        </CardBody></Card>
+        <Card label="Channel commentary"><CardHeader title="Telegram channel commentary" subtitle="Structured fields only, capped at CAUTION: advisory context, never a market data source" /><CardBody>
+          <Data def={EP.channelNews} what="channel commentary" rows={3}>{(n) => <div className="space-y-3">{statusNote(n) && <Banner tone="warn" title="Commentary not current">{statusNote(n)}</Banner>}<p className="text-sm">{n.summary.line}</p>
+            {n.clusters.length === 0 ? <p className="text-sm text-fg-muted">No clusters.</p> : <ul className="divide-y divide-line">{orderClusters(n.clusters).map((c) => <li key={c.clusterId} className="flex items-center justify-between py-2 text-sm"><span>{clusterTitle(c)} <span className="text-fg-faint">· {c.items} items · {c.channels} channels</span></span><Badge tone={polarityTone(c.polarity)}>{c.mixed ? "mixed" : polarityWord(c.polarity)}</Badge></li>)}</ul>}</div>}</Data>
+        </CardBody></Card>
+      </div>
+    </>
   );
 }

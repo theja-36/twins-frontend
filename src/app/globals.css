@@ -2,234 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ───────────────────────── TWINS design tokens ─────────────────────────
+   Dark-first. Surfaces step up in lightness (bg < surface < surface-2 < surface-3); borders are hairlines; one restrained accent;
+   green / red / amber / blue are SEMANTIC only (positive, negative-or-blocked, caution, informational) and are always paired with a text label or icon. */
 :root {
-  --background: #F4F6F8;
-  --foreground: #0A0E17;
+  color-scheme: dark;
+  --bg: 9 12 17; --surface: 15 19 26; --surface-2: 20 25 34; --surface-3: 27 33 44;
+  --line: 34 42 54; --line-strong: 48 58 74;
+  --fg: 230 234 241; --fg-muted: 154 164 181; --fg-faint: 112 122 140;
+  --accent: 124 156 255; --accent-soft: 124 156 255;
+  --pos: 52 196 141; --pos-soft: 52 196 141; --neg: 240 97 109; --neg-soft: 240 97 109; --warn: 232 176 75; --warn-soft: 232 176 75; --info: 107 167 240; --info-soft: 107 167 240;
+  --focus: 143 180 255;
+}
+html.light {
+  color-scheme: light;
+  --bg: 244 246 249; --surface: 255 255 255; --surface-2: 247 249 252; --surface-3: 238 241 246;
+  --line: 224 229 237; --line-strong: 203 211 224;
+  --fg: 16 22 34; --fg-muted: 82 94 114; --fg-faint: 120 132 152;
+  --accent: 52 88 214; --accent-soft: 52 88 214;
+  --pos: 14 140 96; --pos-soft: 14 140 96; --neg: 200 48 62; --neg-soft: 200 48 62; --warn: 160 100 10; --warn-soft: 160 100 10; --info: 30 100 190; --info-soft: 30 100 190;
+  --focus: 52 88 214;
 }
 
-body {
-  color: var(--foreground);
-  background-color: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
-}
+html, body { background: rgb(var(--bg)); color: rgb(var(--fg)); }
+body { font-family: var(--font-inter), -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; font-size: 14px; line-height: 1.5; overflow-x: hidden; }
+* { border-color: rgb(var(--line)); }
+::selection { background: rgb(var(--accent) / 0.3); }
+:focus-visible { outline: 2px solid rgb(var(--focus)); outline-offset: 2px; border-radius: 4px; }
+::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgb(var(--line-strong)); border-radius: 9999px; }
 
-/* Polished minimal scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
-}
-
-/* ── Dark mode: remaps the light-theme utilities used across the app (class strategy; toggled by the header button, saved in localStorage). Generated mapping, reviewed in screenshots. ── */
-.dark .bg-white { background-color:#10131A }
-.dark .hover\:bg-white:hover { background-color:#10131A }
-.dark .bg-white\/80 { background-color:rgba(18,26,46,.8) }
-.dark .hover\:bg-white\/80:hover { background-color:rgba(18,26,46,.8) }
-.dark .bg-white\/10 { background-color:rgba(255,255,255,.08) }
-.dark .hover\:bg-white\/10:hover { background-color:rgba(255,255,255,.08) }
-.dark .bg-canvas { background-color:#0A0C10 }
-.dark .hover\:bg-canvas:hover { background-color:#0A0C10 }
-.dark .bg-canvas-subtle { background-color:#0C0F15 }
-.dark .hover\:bg-canvas-subtle:hover { background-color:#0C0F15 }
-.dark .bg-canvas-surface { background-color:#10131A }
-.dark .hover\:bg-canvas-surface:hover { background-color:#10131A }
-.dark .bg-canvas-muted { background-color:#161B24 }
-.dark .hover\:bg-canvas-muted:hover { background-color:#161B24 }
-.dark .bg-slate-50 { background-color:#161B24 }
-.dark .hover\:bg-slate-50:hover { background-color:#161B24 }
-.dark .bg-slate-50\/80 { background-color:rgba(22,31,54,.8) }
-.dark .hover\:bg-slate-50\/80:hover { background-color:rgba(22,31,54,.8) }
-.dark .bg-slate-50\/60 { background-color:rgba(22,31,54,.6) }
-.dark .hover\:bg-slate-50\/60:hover { background-color:rgba(22,31,54,.6) }
-.dark .bg-slate-50\/50 { background-color:rgba(22,31,54,.5) }
-.dark .hover\:bg-slate-50\/50:hover { background-color:rgba(22,31,54,.5) }
-.dark .bg-slate-100 { background-color:#161B24 }
-.dark .hover\:bg-slate-100:hover { background-color:#161B24 }
-.dark .bg-slate-200 { background-color:#232A36 }
-.dark .hover\:bg-slate-200:hover { background-color:#232A36 }
-.dark .bg-slate-200\/60 { background-color:rgba(37,48,74,.6) }
-.dark .hover\:bg-slate-200\/60:hover { background-color:rgba(37,48,74,.6) }
-.dark .bg-emerald-50 { background-color:rgba(16,185,129,.13) }
-.dark .hover\:bg-emerald-50:hover { background-color:rgba(16,185,129,.13) }
-.dark .bg-rose-50 { background-color:rgba(244,63,94,.13) }
-.dark .hover\:bg-rose-50:hover { background-color:rgba(244,63,94,.13) }
-.dark .bg-amber-50 { background-color:rgba(245,158,11,.13) }
-.dark .hover\:bg-amber-50:hover { background-color:rgba(245,158,11,.13) }
-.dark .bg-royal-50 { background-color:rgba(0,212,170,.15) }
-.dark .hover\:bg-royal-50:hover { background-color:rgba(0,212,170,.15) }
-.dark .bg-royal-50\/80 { background-color:rgba(0,212,170,.15) }
-.dark .hover\:bg-royal-50\/80:hover { background-color:rgba(0,212,170,.15) }
-.dark .bg-royal-50\/70 { background-color:rgba(0,212,170,.14) }
-.dark .hover\:bg-royal-50\/70:hover { background-color:rgba(0,212,170,.14) }
-.dark .bg-royal-100 { background-color:rgba(0,212,170,.22) }
-.dark .hover\:bg-royal-100:hover { background-color:rgba(0,212,170,.22) }
-.dark .bg-acid-100 { background-color:rgba(0,212,170,.16) }
-.dark .hover\:bg-acid-100:hover { background-color:rgba(0,212,170,.16) }
-.dark .bg-acid-50 { background-color:rgba(0,212,170,.10) }
-.dark .hover\:bg-acid-50:hover { background-color:rgba(0,212,170,.10) }
-.dark .bg-ink { background-color:#232A36 }
-.dark .text-ink { color:#E8ECF4 }
-.dark .hover\:text-ink:hover { color:#E8ECF4 }
-.dark .text-ink-secondary { color:#B6C0D4 }
-.dark .hover\:text-ink-secondary:hover { color:#B6C0D4 }
-.dark .text-ink-muted { color:#8794AD }
-.dark .hover\:text-ink-muted:hover { color:#8794AD }
-.dark .text-slate-900 { color:#E8ECF4 }
-.dark .hover\:text-slate-900:hover { color:#E8ECF4 }
-.dark .text-slate-800 { color:#DCE2EE }
-.dark .hover\:text-slate-800:hover { color:#DCE2EE }
-.dark .text-slate-700 { color:#C5CEDF }
-.dark .hover\:text-slate-700:hover { color:#C5CEDF }
-.dark .text-slate-600 { color:#AAB5CA }
-.dark .hover\:text-slate-600:hover { color:#AAB5CA }
-.dark .text-slate-500 { color:#8E9BB5 }
-.dark .hover\:text-slate-500:hover { color:#8E9BB5 }
-.dark .text-royal-600 { color:#33DDBB }
-.dark .hover\:text-royal-600:hover { color:#33DDBB }
-.dark .text-royal-700 { color:#4FE0C0 }
-.dark .hover\:text-royal-700:hover { color:#4FE0C0 }
-.dark .text-royal-800 { color:#66E5C9 }
-.dark .hover\:text-royal-800:hover { color:#66E5C9 }
-.dark .text-royal-900 { color:#8CEBD4 }
-.dark .hover\:text-royal-900:hover { color:#8CEBD4 }
-.dark .text-royal-950 { color:#A8F0DE }
-.dark .hover\:text-royal-950:hover { color:#A8F0DE }
-.dark .text-emerald-600 { color:#00D4AA }
-.dark .hover\:text-emerald-600:hover { color:#4FD6A0 }
-.dark .text-emerald-700 { color:#5EE0A8 }
-.dark .hover\:text-emerald-700:hover { color:#5EE0A8 }
-.dark .text-emerald-800 { color:#86EBC0 }
-.dark .hover\:text-emerald-800:hover { color:#86EBC0 }
-.dark .text-rose-600 { color:#FB8DA0 }
-.dark .hover\:text-rose-600:hover { color:#FB8DA0 }
-.dark .text-rose-700 { color:#FCA5B4 }
-.dark .hover\:text-rose-700:hover { color:#FCA5B4 }
-.dark .text-rose-800 { color:#FDBBC6 }
-.dark .hover\:text-rose-800:hover { color:#FDBBC6 }
-.dark .text-amber-700 { color:#FBBF4D }
-.dark .hover\:text-amber-700:hover { color:#FBBF4D }
-.dark .text-amber-800 { color:#FCD27A }
-.dark .hover\:text-amber-800:hover { color:#FCD27A }
-.dark .text-amber-900 { color:#FDE0A4 }
-.dark .hover\:text-amber-900:hover { color:#FDE0A4 }
-.dark .text-amber-950 { color:#FEE9BE }
-.dark .hover\:text-amber-950:hover { color:#FEE9BE }
-.dark .text-acid-700 { color:#4FE0C0 }
-.dark .hover\:text-acid-700:hover { color:#4FE0C0 }
-.dark .text-acid-800 { color:#8CEBD4 }
-.dark .hover\:text-acid-800:hover { color:#8CEBD4 }
-.dark .border-slate-100 { border-color:#1C222D }
-.dark .hover\:border-slate-100:hover { border-color:#1C222D }
-.dark .border-slate-50 { border-color:#161B24 }
-.dark .hover\:border-slate-50:hover { border-color:#161B24 }
-.dark .border-slate-200 { border-color:#232A36 }
-.dark .hover\:border-slate-200:hover { border-color:#232A36 }
-.dark .border-slate-200\/90 { border-color:#232A36 }
-.dark .hover\:border-slate-200\/90:hover { border-color:#232A36 }
-.dark .border-slate-200\/80 { border-color:#232A36 }
-.dark .hover\:border-slate-200\/80:hover { border-color:#232A36 }
-.dark .border-slate-200\/60 { border-color:rgba(37,48,74,.6) }
-.dark .hover\:border-slate-200\/60:hover { border-color:rgba(37,48,74,.6) }
-.dark .border-slate-300 { border-color:#2E3748 }
-.dark .hover\:border-slate-300:hover { border-color:#2E3748 }
-.dark .border-emerald-200 { border-color:rgba(52,211,153,.35) }
-.dark .hover\:border-emerald-200:hover { border-color:rgba(52,211,153,.35) }
-.dark .border-emerald-200\/80 { border-color:rgba(52,211,153,.35) }
-.dark .hover\:border-emerald-200\/80:hover { border-color:rgba(52,211,153,.35) }
-.dark .border-rose-200 { border-color:rgba(251,113,133,.35) }
-.dark .hover\:border-rose-200:hover { border-color:rgba(251,113,133,.35) }
-.dark .border-rose-200\/80 { border-color:rgba(251,113,133,.35) }
-.dark .hover\:border-rose-200\/80:hover { border-color:rgba(251,113,133,.35) }
-.dark .border-amber-200 { border-color:rgba(251,191,36,.35) }
-.dark .hover\:border-amber-200:hover { border-color:rgba(251,191,36,.35) }
-.dark .border-amber-200\/90 { border-color:rgba(251,191,36,.35) }
-.dark .hover\:border-amber-200\/90:hover { border-color:rgba(251,191,36,.35) }
-.dark .border-amber-200\/80 { border-color:rgba(251,191,36,.35) }
-.dark .hover\:border-amber-200\/80:hover { border-color:rgba(251,191,36,.35) }
-.dark .border-amber-200\/60 { border-color:rgba(251,191,36,.3) }
-.dark .hover\:border-amber-200\/60:hover { border-color:rgba(251,191,36,.3) }
-.dark .border-amber-300 { border-color:rgba(251,191,36,.45) }
-.dark .hover\:border-amber-300:hover { border-color:rgba(251,191,36,.45) }
-.dark .border-royal-200 { border-color:rgba(0,212,170,.4) }
-.dark .hover\:border-royal-200:hover { border-color:rgba(0,212,170,.4) }
-.dark .border-royal-200\/80 { border-color:rgba(0,212,170,.4) }
-.dark .hover\:border-royal-200\/80:hover { border-color:rgba(0,212,170,.4) }
-.dark .border-royal-200\/70 { border-color:rgba(0,212,170,.4) }
-.dark .hover\:border-royal-200\/70:hover { border-color:rgba(0,212,170,.4) }
-.dark .border-royal-200\/60 { border-color:rgba(0,212,170,.35) }
-.dark .hover\:border-royal-200\/60:hover { border-color:rgba(0,212,170,.35) }
-.dark .border-royal-200\/50 { border-color:rgba(0,212,170,.3) }
-.dark .hover\:border-royal-200\/50:hover { border-color:rgba(0,212,170,.3) }
-.dark .border-acid-300 { border-color:rgba(0,212,170,.45) }
-.dark .hover\:border-acid-300:hover { border-color:rgba(0,212,170,.45) }
-.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]), .dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]) { border-color: #1C222D }
-.dark .from-white { --tw-gradient-from: #10131A var(--tw-gradient-from-position); --tw-gradient-to: rgba(18,26,46,0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.dark .via-white { --tw-gradient-to: rgba(18,26,46,0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), #10131A var(--tw-gradient-via-position), var(--tw-gradient-to); }
-.dark .to-white { --tw-gradient-to: #10131A var(--tw-gradient-to-position); }
-.dark .from-amber-50\/90 { --tw-gradient-from: rgba(245,158,11,.12) var(--tw-gradient-from-position); --tw-gradient-to: rgba(245,158,11,0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.dark .from-amber-50\/80 { --tw-gradient-from: rgba(245,158,11,.12) var(--tw-gradient-from-position); --tw-gradient-to: rgba(245,158,11,0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.dark .from-acid-50\/80 { --tw-gradient-from: rgba(0,212,170,.12) var(--tw-gradient-from-position); --tw-gradient-to: rgba(0,212,170,0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.dark .from-acid-50\/60 { --tw-gradient-from: rgba(0,212,170,.12) var(--tw-gradient-from-position); --tw-gradient-to: rgba(0,212,170,0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.dark .to-amber-50\/50 { --tw-gradient-to: rgba(245,158,11,.08) var(--tw-gradient-to-position); }
-.dark .to-amber-50\/40 { --tw-gradient-to: rgba(245,158,11,.08) var(--tw-gradient-to-position); }
-.dark .to-acid-50\/30 { --tw-gradient-to: rgba(0,212,170,.06) var(--tw-gradient-to-position); }
-
-html.dark { --background: #0A0C10; --foreground: #E8ECF4; color-scheme: dark; }
-html.dark ::-webkit-scrollbar-thumb { background: #2F3B58; }
-html.dark ::-webkit-scrollbar-thumb:hover { background: #46557A; }
-html.dark input, html.dark select, html.dark textarea { color-scheme: dark; }
-html.dark ::placeholder { color: #6B7893; }
-html.dark .shadow-card, html.dark .shadow-cardHover, html.dark .shadow-dropdown { box-shadow: 0 1px 2px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.02); }
-html.dark .ring-white { --tw-ring-color: #10131A; }
-
-/* translucent variants used by the header and the banners */
-.dark .bg-canvas\/90 { background-color: rgba(11,16,32,.9) }
-.dark .bg-amber-50\/70 { background-color: rgba(245,158,11,.12) }
-.dark .bg-rose-50\/70 { background-color: rgba(244,63,94,.12) }
-.dark .hover\:bg-white\/50:hover { background-color: rgba(255,255,255,.06) }
-.dark .bg-acid-300.text-ink, .dark .bg-acid-400.text-ink { color: #0A0E17 }
-.dark .border-ink { border-color: #2A365A }
-
-
-/* ── Cockpit layer ── */
-:root { --font-numeric: "tabular-nums"; }
-body { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "cv11" 1; }
-.num, .font-mono { font-variant-numeric: tabular-nums slashed-zero; font-feature-settings: "tnum" 1, "zero" 1; }
-/* faint grid texture behind everything (dark only; hairline, 1.5% white) */
-html.dark body { background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px); background-size: 32px 32px; background-position: -1px -1px; }
-/* sticky table headers inside a scroll container */
-.tbl-scroll { max-height: 70vh; overflow: auto; }
-.tbl-scroll thead th { position: sticky; top: 0; z-index: 1; background: var(--th-bg, #fff); }
-html.dark .tbl-scroll thead th { --th-bg: #0C0F15; }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
-
-
-/* ── Light theme, toned for the cockpit palette ──
-   The teal / coral used as TEXT on white must be darker than the dark-theme values to keep contrast (>= 4.5:1). Surfaces stay white on a cool grey page with hairline borders. */
-html:not(.dark) { --background: #F3F5F8; --foreground: #0E1520; }
-html:not(.dark) .text-emerald-500, html:not(.dark) .text-emerald-600, html:not(.dark) .text-royal-500, html:not(.dark) .text-royal-600 { color: #00775D; }
-html:not(.dark) .hover\:text-royal-600:hover { color: #005E4A; }
-html:not(.dark) .text-rose-500, html:not(.dark) .text-rose-600 { color: #C92A39; }
-html:not(.dark) .text-amber-500 { color: #A15C00; }
-html:not(.dark) .bg-royal-600, html:not(.dark) .hover\:bg-royal-600:hover { background-color: #008F70; }
-html:not(.dark) .border-slate-200\/80 { border-color: #E1E6ED; }
-html:not(.dark) .divide-slate-200\/60 > :not([hidden]) ~ :not([hidden]) { border-color: #EAEEF3; }
-html:not(.dark) .bg-slate-50 { background-color: #F6F8FA; }
-html:not(.dark) .hover\:bg-slate-50:hover { background-color: #F1F4F7; }
-html:not(.dark) .tbl-scroll thead th { --th-bg: #F6F8FA; }
-html:not(.dark) .text-slate-400 { color: #6B7788; }
+/* tabular numerals everywhere numbers are compared */
+.num { font-family: var(--font-jb-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.label { font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(var(--fg-faint)); font-weight: 600; }
+.skeleton { background: linear-gradient(90deg, rgb(var(--surface-2)) 25%, rgb(var(--surface-3)) 37%, rgb(var(--surface-2)) 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; border-radius: 6px; }
+@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+.tbl-scroll { overflow-x: auto; max-width: 100%; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+.sr-only-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

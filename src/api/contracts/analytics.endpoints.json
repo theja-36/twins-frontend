@@ -1,0 +1,129 @@
+{
+  "source": "packages/outcomes/src/contracts.ts (twins backend, Stage 08)",
+  "contractVersion": "analytics-contract-v1",
+  "notice": "Simulated paper-trading results. Figures based on fixture data are not validated performance. Confidence is a strength score, not a probability. Nothing here changes any setting.",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/analytics/overview",
+      "section": "overview",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [
+        "accountId?",
+        "dataset=ALL|VALIDATED|FIXTURE"
+      ],
+      "response": "OverviewResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/strategies",
+      "section": "strategy",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [
+        "dimension=strategy|version|instrument|timeframe|regime|exit|stop|target"
+      ],
+      "response": "StrategyResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/channels",
+      "section": "channels",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [],
+      "response": "ChannelResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/independent",
+      "section": "independent",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [],
+      "response": "IndependentResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/agents",
+      "section": "agents",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [],
+      "response": "AgentResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/decisions",
+      "section": "decisionQuality",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [],
+      "response": "DecisionQualityResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/outcomes",
+      "section": "outcomes",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [
+        "finality=FINAL|PARTIAL",
+        "limit<=200",
+        "cursor?"
+      ],
+      "response": "OutcomeHistoryResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/insights",
+      "section": "insights",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [
+        "kind?",
+        "limit<=200"
+      ],
+      "response": "InsightResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/drift",
+      "section": "drift",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [],
+      "response": "DriftResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/data-quality",
+      "section": "dataQuality",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [],
+      "response": "DataQualityResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/calibration",
+      "section": "calibration",
+      "permission": "analytics:read",
+      "auth": "SESSION_REQUIRED",
+      "ownerScoped": true,
+      "query": [],
+      "response": "CalibrationResponse"
+    }
+  ]
+}

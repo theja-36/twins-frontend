@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { entryText, expiryText, filterFeed, summarizeChannels } from "../src/lib/channels";
 import { filterClaims, NO_FILTER, qualityCounts, stopQuality } from "../src/lib/claims";
 import { currentDrawdownR, dayPnl, equityCurve, exposureBySymbol } from "../src/lib/portfolio";
-import { formatCount } from "../src/components/motion/format";
 import type { PositionView, TelegramClaim, TradeOutcome } from "../src/types/trading";
 
 const claim = (o: Partial<NonNullable<TelegramClaim["claim"]>> = {}): TelegramClaim["claim"] => ({ action: "buy", underlying: "SENSEX", strike: 80000, optionType: "CE", entry: { type: "above", price: 300, low: null, high: null }, stopLoss: 250, targets: [350], levelBasis: "unspecified", levelBasisInferred: false, levelBasisConflict: false, expiry: { status: "day_month", day: 12, month: 11, year: null }, ...o });
@@ -74,14 +73,6 @@ describe("portfolio helpers", () => {
   it("day P&L is today's closed trades plus open unrealised", () => {
     const now = new Date(2031, 0, 5, 12, 0, 0);
     expect(dayPnl([outcome(100, 1, new Date(2031, 0, 5, 9).toISOString()), outcome(500, 1, new Date(2031, 0, 4, 9).toISOString())], [pos({ unrealizedPnl: 25 })], now)).toBe(125);
-  });
-});
-
-describe("formatCount", () => {
-  it("formats Indian grouping and guards non-finite", () => {
-    expect(formatCount(123456.5, 1, "₹")).toBe("₹1,23,456.5");
-    expect(formatCount(Number.NaN, 0)).toBe("—");
-    expect(formatCount(12, 0, "", "%")).toBe("12%");
   });
 });
 
