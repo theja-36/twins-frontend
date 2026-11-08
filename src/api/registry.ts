@@ -16,6 +16,7 @@ const list = <X>(key: string) => (raw: unknown): X[] | null => (isObj(raw) && Ar
 const arr = <X>(raw: unknown): X[] | null => (Array.isArray(raw) ? (raw as X[]) : null);
 
 const A = "Stage 01 user sessions + a per-user GET route over";
+const S3 = "a user session (login / session BFF not built in the web app); the backend route already exists in feat/master-build (Stage 03)";
 const def = <X>(id: string, path: string, availability: EndpointDef<X>["availability"], validate: EndpointDef<X>["validate"], extra: Partial<EndpointDef<X>> = {}): EndpointDef<X> => ({ id, path, availability, validate, ...extra });
 const analytics = (id: string, key: string) => {
   const e = catalogue.endpoints.find((x: { path: string }) => x.path.endsWith(`/${key}`));
@@ -43,12 +44,16 @@ export const EP = {
   paperOutcomes: def<TradeOutcome[]>("paper.outcomes", "paper/outcomes?limit=100", "LEGACY_READ", (r) => arr<TradeOutcome>(r) ?? list<TradeOutcome>("outcomes")(r), { isEmpty: (d) => d.length === 0 }),
   paperStats: def<OutcomeStats>("paper.stats", "paper/outcomes/stats", "LEGACY_READ", has("n", "winRate")),
   paperReadiness: def<Readiness>("paper.readiness", "paper/readiness", "LEGACY_READ", has("items", "blockers")),
+  // ── Stage 03: Telegram intelligence. The backend routes exist (GET /intelligence/*, feat/master-build); they need a user SESSION, and the web app has no login / session BFF yet, so LIVE reports them as sign-in required (never the shared service token).
+  intelChannels: def<{ channels: T.IntelChannel[] }>("intel.channels", "intelligence/channels?limit=100", "NEEDS_SESSION", has("channels"), { permission: "channels:read", dependency: S3, isEmpty: (d) => d.channels.length === 0 }),
+  intelCandidates: def<{ candidates: T.IntelCandidate[] }>("intel.candidates", "intelligence/candidates?limit=50", "NEEDS_SESSION", has("candidates"), { permission: "opportunities:read", dependency: S3, isEmpty: (d) => d.candidates.length === 0 }),
+  intelPipeline: def<T.IntelPipeline>("intel.pipeline", "intelligence/pipeline", "NEEDS_SESSION", has("claimsParsed", "byOutcome"), { permission: "opportunities:read", dependency: S3 }),
+  intelPlaybooks: def<{ playbooks: T.IntelPlaybookSummary[] }>("intel.playbooks", "intelligence/playbooks?limit=50", "NEEDS_SESSION", has("playbooks"), { permission: "strategies:read", dependency: S3, isEmpty: (d) => d.playbooks.length === 0 }),
+  intelArchive: def<T.ArchiveScorecards>("intel.archive", "intelligence/archive/channels?limit=20", "NEEDS_SESSION", has("scorecards"), { permission: "strategies:read", dependency: S3, isEmpty: (d) => d.scorecards.length === 0 }),
   // ── Stages 04-07 contracts: typed, stored, but no web route yet ───────────
   opportunities: def<T.Opportunity[]>("opportunities", "opportunities", "CONTRACT_ONLY", list("opportunities"), { permission: "opportunity:read", dependency: "GET /opportunities over packages/database/src/stores/opportunityStore.ts (Stage 05 stores exist; no route)", isEmpty: (d) => d.length === 0 }),
   research: def<T.ResearchCase[]>("research.cases", "research/cases", "CONTRACT_ONLY", list("cases"), { permission: "research:read", dependency: "GET /research/cases over research_packages (Stage 04 stores exist; no route)", isEmpty: (d) => d.length === 0 }),
   agentCards: def<T.AgentCard[]>("research.agents", "research/agents", "CONTRACT_ONLY", list("agents"), { permission: "research:read", dependency: "GET /research/agents (agent registry + run stats; no route)" }),
-  playbooks: def<T.Playbook[]>("research.playbooks", "research/playbooks", "CONTRACT_ONLY", list("playbooks"), { permission: "research:read", dependency: "GET /research/playbooks (Stage 04 playbook versions; no route)", isEmpty: (d) => d.length === 0 }),
-  channelStrategy: def<T.ChannelStrategy[]>("research.channel-strategy", "research/channel-strategy", "CONTRACT_ONLY", list("channels"), { permission: "research:read", dependency: "GET /research/channel-strategy (per-channel pattern evidence; no route)", isEmpty: (d) => d.length === 0 }),
   evidence: def<T.EvidenceRecord[]>("evidence", "evidence", "CONTRACT_ONLY", list("evidence"), { permission: "research:read", dependency: "GET /evidence (research_packages evidence refs; no route)", isEmpty: (d) => d.length === 0 }),
   decisions: def<T.DecisionV2[]>("decisions", "decisions", "NEEDS_SESSION", list("decisions"), { permission: "decision:read", dependency: `${A} user_decisions (Stage 07 store: decisionStore)`, isEmpty: (d) => d.length === 0 }),
   riskOverview: def<T.RiskOverview>("risk.overview", "risk/overview", "NEEDS_SESSION", has("verdictCounts", "limits"), { permission: "risk:read", dependency: `${A} risk_assessments + risk_control_events` }),
@@ -67,3 +72,12 @@ export const EP = {
   admin: def<T.AdminOverview>("admin.overview", "admin/overview", "NEEDS_SESSION", has("users", "audit"), { permission: "admin:read", dependency: `${A} users, roles, audit chain and job status` }),
 } as const;
 export type EndpointKey = keyof typeof EP;
+
+/** Endpoints that depend on an id in the path (a claim, a channel, a playbook). Same states, same fixtures-in-DEMO rule; ids must be full UUIDs. */
+export const isUuid = (v: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+export const epIntel = {
+  claim: (id: string) => def<{ claim: T.IntelClaim }>(`intel.claim:${id}`, `intelligence/claims/${id}`, "NEEDS_SESSION", has("claim"), { permission: "signals:read", dependency: S3 }),
+  matches: (id: string) => def<T.HistoricalMatches>(`intel.matches:${id}`, `intelligence/claims/${id}/historical-matches`, "NEEDS_SESSION", has("claimId", "state"), { permission: "signals:read", dependency: S3 }),
+  performance: (id: string) => def<T.ChannelPerformance>(`intel.performance:${id}`, `intelligence/channels/${id}/performance`, "NEEDS_SESSION", has("funnel", "outcomes"), { permission: "strategies:read", dependency: S3 }),
+  playbook: (id: string) => def<T.IntelPlaybookDetail>(`intel.playbook:${id}`, `intelligence/playbooks/${id}`, "NEEDS_SESSION", has("playbook", "versions"), { permission: "strategies:read", dependency: S3 }),
+};

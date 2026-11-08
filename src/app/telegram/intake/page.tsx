@@ -19,6 +19,9 @@ export default function IntakePage() {
             <p className="text-xs text-fg-muted">Oldest open item: {i.oldestOpenSeconds == null ? "none" : `${ageText(i.oldestOpenSeconds)} old`}</p>
             <DataTable label="Recent intake" dense rows={i.recent} rowKey={(r) => r.id} pageSize={8} cols={[{ key: "c", header: "Channel", render: (r) => <span className="num">{r.channel}</span> }, { key: "t", header: "Type", hideBelow: "sm", render: (r) => r.type }, { key: "s", header: "Status", render: (r) => <Badge tone={r.status === "completed" ? "ok" : r.status === "failed" ? "bad" : "info"}>{r.status}</Badge> }, { key: "a", header: "Attempts", align: "right", render: (r) => String(r.attempts) }]} /></div>}</Data>
         </CardBody></Card>
+        <Card label="Candidate pipeline"><CardHeader title="Claim to candidate pipeline" subtitle="Policy decisions on parsed claims; a candidate only enters research" /><CardBody>
+          <Data def={EP.intelPipeline} what="candidate pipeline" rows={2}>{(d) => <div className="space-y-2"><MetricGrid cols={4}><Metric label="Parsed claims" value={count(d.claimsParsed)} />{Object.entries(d.byOutcome).slice(0, 3).map(([k, v]) => <Metric key={k} label={k.replaceAll("_", " ").toLowerCase()} value={count(v)} />)}</MetricGrid><p className="text-xs text-fg-muted">Policy {d.policyVersion}. {d.note}</p></div>}</Data>
+        </CardBody></Card>
         <Card label="Claims"><CardHeader title="Parsed claims" subtitle="Newest first" /><CardBody>
           <Data def={EP.claims} what="claims" empty={<p className="text-sm text-fg-muted">No claims yet.</p>}>{(d) => <ClaimTable rows={d.claims} label="Parsed claims" />}</Data>
         </CardBody></Card>
