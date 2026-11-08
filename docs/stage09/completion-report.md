@@ -1,0 +1,8 @@
+# Stage 09 completion report (Complete Frontend & UX)
+
+- **Branch / code commits:** `feat/stage09-frontend`; implementation `bb1019f`, QA fixes `ef1f3b2`, CI trigger `bc2d057` (CI evidence is for `bc2d057`, which contains all code). This docs commit follows and is docs-only.
+- **GitHub Actions:** workflow `ci`, run 42502464681 on `bc2d057`: success (tsc, 70 unit tests, production build with sentinel token, token-absent check). The docs-only commit's CI run is separate and recorded below once complete.
+- **Local evidence:** tsc clean; 70 tests; `next build` 31 pages; `check:bundle` (no fixtures or key material in the client bundle); axe-core 4.14.0 zero violations on 30 routes (dark 1280/768/390, light 1280); all 30 screens viewed by eye; no horizontal overflow at 1280/768/390; 27/27 navigation links and the main workflows scripted; console sweep clean on 30 DEMO routes. Details: `pre-push-qa-report.md`, `screen-verification-matrix.md`, `traceability-and-routes.md`.
+- **Safety:** GET-only proxy unchanged; no write calls; no approve/execute/enable-live controls; login inert; broker page has no inputs; fixtures only behind `NEXT_PUBLIC_TWINS_DEMO=1` and absent from normal builds. **No real backend was connected and no live-trading functionality was enabled.**
+- **Limitations / dependencies:** Stage 01 user sessions; no web routes for Stage 04-08 data (those screens are DEMO-only, LIVE shows unavailable/denied); no screen-reader, real-device, Lighthouse, Firefox/Safari testing; CI does not run fixture-exclusion or accessibility checks; backend gaps G-13..G-33 unchanged.
+- **Not done by design:** no PR, no merge, no deploy, Stage 10 not started.

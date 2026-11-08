@@ -37,3 +37,9 @@ No horizontal page scroll on any of 30 routes at 1280, 768 and 390 (one defect f
 - Frontend CI has never run (branch not pushed).
 - LIVE sweep found the two issues above after which only DEMO was re-axed.
 - Everything in `docs/stage09/README.md` "Gaps and carry-overs" still applies (Stage 01 sessions; no web routes for Stage 04-08 data).
+
+## Post-push CI verification
+- Pushed `ef1f3b2` to `origin/feat/stage09-frontend`. That push started **no** workflow: `.github/workflows/ci.yml` triggered only on pull requests and pushes to `main`. No run existed for the branch.
+- Before changing anything, the workflow's exact steps were run locally: `tsc --noEmit` OK; `npm test` 70 passed; `next build` with the CI sentinel token OK; sentinel token absent from `.next/static`; `check:bundle` OK.
+- Commit `bc2d057` added `'feat/**'` to the push trigger (no step added, removed or weakened). Run **42502464681** (`ci`, job "build (type-check, lint, production build)") on `bc2d057`: **success**. Steps: checkout, setup-node, `npm ci`, `npx tsc --noEmit`, unit tests, production build with sentinel token, token-not-in-client-bundle check: all success. Only annotations: Node 20 action deprecation and an `ubuntu-latest` migration notice (not failures).
+- Note: the job title says "lint" but the workflow has no lint step, and CI does not run `check:bundle` (fixture exclusion) or any axe/browser checks; those were run locally only.
