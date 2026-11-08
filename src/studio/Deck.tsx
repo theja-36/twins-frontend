@@ -62,9 +62,9 @@ export function Deck({ signals = SIGNALS }: { signals?: StudioSignal[] }) {
             <thead><tr><th>Instrument</th><th>Side</th><th>Origin</th><th>Status</th><th>Entry / Stop</th><th>Stop quality</th><th>Received</th></tr></thead>
             <tbody>{signals.map((s) => (
               <tr key={s.id} onClick={() => setOpen(s)}>
-                <td><button className="st-link" onClick={(e) => { e.stopPropagation(); setOpen(s); }}>{title(s)}</button><div className="st-sub" style={{ margin: 0, fontSize: 12 }}>{s.expiry ?? "no expiry"}</div></td>
-                <td>{s.side}</td><td>Telegram · {s.channel}</td><td><Chip tone={STATUS[s.status].tone}>{STATUS[s.status].label}</Chip></td>
-                <td className="num">{s.entry.price} / {s.stop ?? "—"}</td><td><Chip tone={STOP[s.stopQuality].tone}>{STOP[s.stopQuality].label}</Chip></td><td className="num">{s.receivedAt} · {ageText(s.ageMin)}</td>
+                <td data-label="Instrument"><button className="st-link" onClick={(e) => { e.stopPropagation(); setOpen(s); }}>{title(s)}</button><div className="st-sub" style={{ margin: 0, fontSize: 12 }}>{s.expiry ?? "no expiry"}</div></td>
+                <td data-label="Side">{s.side}</td><td data-label="Origin">Telegram · {s.channel}</td><td data-label="Status"><Chip tone={STATUS[s.status].tone}>{STATUS[s.status].label}</Chip></td>
+                <td className="num" data-label="Entry / Stop">{s.entry.price} / {s.stop ?? "—"}</td><td data-label="Stop quality"><Chip tone={STOP[s.stopQuality].tone}>{STOP[s.stopQuality].label}</Chip></td><td className="num" data-label="Received">{s.receivedAt} · {ageText(s.ageMin)}</td>
               </tr>))}</tbody></table></div></div>
       )}
       {open ? <SignalDetail s={open} modal onClose={() => setOpen(null)} /> : null}

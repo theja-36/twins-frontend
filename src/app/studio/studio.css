@@ -174,4 +174,11 @@
   .st-cardhead h3{font-size:23px}
   .st-panel{top:auto;left:8px;right:8px;bottom:8px;width:auto;max-height:88vh;border-radius:28px}
 }
+@media (max-width:860px){
+  .st-table{min-width:0} .st-table thead{display:none} .st-table tbody{display:block}
+  .st-table tr{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;padding:14px 0;border-top:1px solid var(--line)} .st-table tr:first-child{border-top:0}
+  .st-table td{border:0;padding:0;min-width:0} .st-table tr:hover td,.st-table tr[data-sel=true] td{background:none}
+  .st-table td::before{content:attr(data-label);display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--ink3);margin-bottom:3px}
+  .st-table td:first-child{grid-column:1/-1}
+}
 @media (prefers-reduced-motion:reduce){.st *{transition:none!important;animation:none!important}}

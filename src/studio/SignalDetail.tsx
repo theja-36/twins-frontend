@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
-import { X } from "lucide-react";
+import { Send, X } from "lucide-react";
+import { BOT_LINK } from "./botLink";
 import type { StudioSignal, Tone } from "./fixtures";
 import { Chip, FRESH, LevelLadder, STATUS, STOP, ageText, title } from "./ui";
 
@@ -41,7 +42,8 @@ export function SignalDetail({ s, modal = false, onClose }: { s: StudioSignal; m
         {s.blockers.length === 0 ? <p className="st-sub">Nothing recorded as blocking.</p> : <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{s.blockers.map((b) => <div key={b.code} className="st-agent" style={{ borderTop: 0, padding: 0 }}><Chip tone={b.severity === "blocking" ? "bad" : "warn"}>{b.severity}</Chip><span style={{ fontSize: 13.5, fontWeight: 600 }}>{b.text}</span></div>)}</div>}</section>
       <section><h4>Stop quality</h4><p className="st-sub" style={{ margin: 0 }}>{s.stopNote}</p></section>
       <section><h4>Data freshness</h4><p className="st-sub" style={{ margin: 0 }}><Chip tone={FRESH[s.freshness.state].tone}>{FRESH[s.freshness.state].label}</Chip> {s.freshness.note}</p></section>
-      <section className="st-note">Approve and Reject are done in the Telegram approval bot, which re-checks every gate. The web app only reads.</section>
+      <section className="st-note">Approve and Reject are done in the Telegram approval bot, which re-checks every gate. The web app only reads.
+        <div style={{ marginTop: 10 }}>{BOT_LINK ? <a className="st-btn" href={BOT_LINK} target="_blank" rel="noopener noreferrer"><Send size={15} aria-hidden />Open the approval bot in Telegram</a> : <button className="st-btn ghost" disabled title="The bot address is not configured for this frontend (NEXT_PUBLIC_TWINS_APPROVAL_BOT_URL)."><Send size={15} aria-hidden />Open in Telegram · not configured</button>}</div></section>
     </>
   );
   if (!modal) return <div className="st-stack" style={{ gap: 16 }}>{body}</div>;
