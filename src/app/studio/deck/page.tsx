@@ -1,11 +1,7 @@
 "use client";
-import { Deck } from "@/studio/Deck";
+import { DecisionsView } from "@/studio/decisions";
+import { PageHead } from "@/studio/kit";
 
 export default function DeckPage() {
-  return (
-    <>
-      <header className="st-top"><div><h1>Decision Deck</h1><p>Go through signals one at a time. Read-only: swiping only moves between cards.</p></div></header>
-      <Deck />
-    </>
-  );
+  return (<><PageHead title="Decisions" sub="Go through decisions one at a time. Read-only: swiping only moves between cards." /><DecisionsView /></>);
 }

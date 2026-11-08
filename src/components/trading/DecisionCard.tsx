@@ -155,7 +155,7 @@ function CardView({ c }: { c: DecisionCardData }) {
   );
 }
 
-const BOT = process.env["NEXT_PUBLIC_TWINS_APPROVAL_BOT_URL"] ?? "";
+const BOT = process.env.NEXT_PUBLIC_TWINS_APPROVAL_BOT_URL ?? "";
 const BOT_OK = /^https:\/\/t\.me\/[A-Za-z0-9_]{5,32}$/.test(BOT);
 
 /** Approve / Reject stay disabled: approval is made in the Telegram bot (owner decision, Option A). The deep link is enabled only when the bot's address is configured at build time. */
