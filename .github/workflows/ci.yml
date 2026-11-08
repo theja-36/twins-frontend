@@ -33,3 +33,28 @@ jobs:
           echo "token value absent from client bundle"
       - name: No demo fixture data or key material in the client bundle (npm run check:bundle)
         run: npm run check:bundle
+  e2e:
+    name: "e2e (Stage 03 screens, Playwright + axe, demo build)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium and its Linux dependencies (a failure here fails the job)
+        run: npx playwright install --with-deps chromium
+      - name: "Playwright + axe (builds and serves the DEMO bundle itself; fixtures only, no API token)"
+        run: npm run test:e2e
+      - name: Playwright report, traces and failure screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
