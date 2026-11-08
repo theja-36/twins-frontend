@@ -7,6 +7,8 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Lets the e2e suite build a DEMO bundle and a LIVE (non-demo) bundle side by side; unset in normal builds, so .next stays the default.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   outputFileTracingRoot: __dirname,
   // Always defined at build time ("0" unless explicitly "1"): DEMO mode shows clearly labelled development fixtures. Without it the fixtures chunk is not reachable.
   env: { NEXT_PUBLIC_TWINS_DEMO: process.env.NEXT_PUBLIC_TWINS_DEMO === "1" ? "1" : "0" },
