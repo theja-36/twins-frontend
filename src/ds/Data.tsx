@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useEndpoint, type EndpointDef, type QueryResult } from "@/api/query";
-import { EmptyState, ErrorState, PermissionDenied, SkeletonBlock, StaleBanner, UnavailableState } from "./states";
+import { Banner, EmptyState, ErrorState, PermissionDenied, SkeletonBlock, StaleBanner, UnavailableState } from "./states";
 
 /**
  * Renders the eight data states for one endpoint so no screen can forget one:
@@ -19,5 +19,5 @@ export function DataView<T>({ q, what, children, empty, rows = 5 }: { q: QueryRe
   if (state === "unavailable") return <UnavailableState what={what} dependency={def.dependency ?? "a backend route"}>The typed contract exists; the web route does not. Nothing is invented in its place.</UnavailableState>;
   if (state === "error") return <ErrorState title={`Could not load ${what}`} onRetry={q.error?.retryable ? q.refetch : undefined}>{q.error?.message}</ErrorState>;
   if (state === "empty") return <>{empty ?? <EmptyState title={`No ${what} yet`}>Nothing has been recorded.</EmptyState>}</>;
-  return <div className="space-y-4">{state === "stale" && <StaleBanner since={q.fetchedAt ? new Date(q.fetchedAt).toISOString() : null} />}{data !== null && children(data, q)}</div>;
+  return <div className="space-y-4">{state === "partial" && data !== null && def.partialReason?.(data) ? <Banner tone="info" title="Partly available">{def.partialReason(data)}</Banner> : null}{state === "stale" && <StaleBanner since={q.fetchedAt ? new Date(q.fetchedAt).toISOString() : null} />}{data !== null && children(data, q)}</div>;
 }

@@ -38,7 +38,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-line bg-bg/95 px-3 py-2 backdrop-blur sm:px-5">
           <button type="button" aria-label="Open navigation" onClick={() => setMenu(true)} className="rounded-md p-2 text-fg-muted hover:bg-surface-2 lg:hidden"><Menu className="h-5 w-5" /></button>
           <ol aria-label="Breadcrumb" className="hidden min-w-0 flex-1 items-center gap-1.5 truncate text-sm text-fg-muted sm:flex">{trail.map((c, i) => <li key={`${c.label}-${i}`} className="flex items-center gap-1.5">{i > 0 && <span aria-hidden>/</span>}{c.href ? <Link href={c.href} className="hover:text-fg">{c.label}</Link> : <span aria-current={i === trail.length - 1 ? "page" : undefined} className={i === trail.length - 1 ? "text-fg" : ""}>{c.label}</span>}</li>)}</ol>
-          <span className="flex-1 truncate text-sm font-medium sm:hidden">{here?.title ?? "TWINS"}</span>
+          <span title={here?.title} className="flex-1 truncate text-sm font-medium sm:hidden">{here?.title ?? "TWINS"}</span>
           <div className="flex items-center gap-2">
             <Badge tone="info" title="All execution in this app is simulated paper trading. Live execution is disabled.">PAPER</Badge>
             {DEMO && <ProvenanceBadge kind="DEMO" />}

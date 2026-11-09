@@ -29,6 +29,10 @@ for (const v of VIEWPORTS) for (const s of SCREENS) {
   });
 }
 
+test("partial answers are labelled as partly available, not shown as complete", async ({ page }) => {
+  for (const path of ["/research/channel-strategy", `/telegram/signals/${CLAIM}`]) { await page.goto(path); await settle(page); await expect(page.getByText("Partly available")).toBeVisible(); }
+});
+
 test("no write, approval, execution or live-trading controls on the Stage 03 screens", async ({ page }) => {
   for (const s of SCREENS) {
     await page.goto(s.path); await settle(page);

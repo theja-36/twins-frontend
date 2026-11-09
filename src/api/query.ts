@@ -8,7 +8,7 @@ import React from "react";
  *  - NEEDS_SESSION endpoints require an authenticated user session that does not exist yet (Stage 01): live mode reports `denied`; the shared bearer token is never treated as a user identity.
  */
 export type Availability = "LEGACY_READ" | "CONTRACT_ONLY" | "NEEDS_SESSION";
-export interface EndpointDef<T> { id: string; path: string; availability: Availability; permission?: string; dependency?: string; validate: (raw: unknown) => T | null; isEmpty?: (d: T) => boolean; refreshMs?: number }
+export interface EndpointDef<T> { id: string; path: string; availability: Availability; permission?: string; dependency?: string; validate: (raw: unknown) => T | null; isEmpty?: (d: T) => boolean; /** An answer that arrived but names parts of itself as NOT available (never a fixture, never invented): state "partial", with the reason shown. */ partialReason?: (d: T) => string | null; refreshMs?: number }
 export type QueryState = "loading" | "ready" | "empty" | "stale" | "error" | "denied" | "unavailable" | "partial";
 export type ApiErrorKind = "not_configured" | "unreachable" | "unauthorized" | "forbidden" | "not_found" | "bad_answer" | "rate_limited";
 export interface ApiError { kind: ApiErrorKind; message: string; retryable: boolean }
@@ -69,6 +69,6 @@ export function useEndpoint<T>(def: EndpointDef<T>): QueryResult<T> {
   if (status.denied) state = "denied"; else if (status.unavailable) state = "unavailable";
   else if (status.error) state = data !== null ? "stale" : "error";
   else if (data === null) state = "loading";
-  else state = def.isEmpty?.(data) ? "empty" : "ready";
+  else state = def.isEmpty?.(data) ? "empty" : def.partialReason?.(data) ? "partial" : "ready";
   return { state, data, error: status.error, fetchedAt: entry?.at ?? null, provenance: DEMO ? "DEMO" : "LIVE", refetch: () => setNonce((n) => n + 1), def };
 }

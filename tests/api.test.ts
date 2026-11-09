@@ -52,3 +52,17 @@ describe("error normalisation", () => {
   });
   it("never leaks backend text into an error message", () => { for (const k of ["not_configured", "unreachable", "unauthorized", "forbidden", "not_found", "bad_answer", "rate_limited"] as const) expect(apiError(k).message).not.toMatch(/token|bearer|stack|sql/i); });
 });
+
+describe("partial answers (an answer that names parts of itself as not available)", () => {
+  it("channel performance is partial while outcomes are NOT_AVAILABLE, and says why", async () => {
+    const { epIntel } = await import("../src/api/registry");
+    const d = epIntel.performance("x");
+    expect(d.partialReason?.({ outcomes: { status: "NOT_AVAILABLE", reason: "r" } } as never)).toMatch(/not available/i);
+  });
+  it("historical matches are partial unless the evidence is SUFFICIENT; the backend's reason is shown verbatim", async () => {
+    const { epIntel } = await import("../src/api/registry");
+    const d = epIntel.matches("x");
+    expect(d.partialReason?.({ state: "SUFFICIENT" } as never)).toBeNull();
+    expect(d.partialReason?.({ state: "NO_COMPARABLE_CASES", reason: "No archived case is comparable." } as never)).toBe("No archived case is comparable.");
+  });
+});

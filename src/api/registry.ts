@@ -77,7 +77,7 @@ export type EndpointKey = keyof typeof EP;
 export const isUuid = (v: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 export const epIntel = {
   claim: (id: string) => def<{ claim: T.IntelClaim }>(`intel.claim:${id}`, `intelligence/claims/${id}`, "NEEDS_SESSION", has("claim"), { permission: "signals:read", dependency: S3 }),
-  matches: (id: string) => def<T.HistoricalMatches>(`intel.matches:${id}`, `intelligence/claims/${id}/historical-matches`, "NEEDS_SESSION", has("claimId", "state"), { permission: "signals:read", dependency: S3 }),
-  performance: (id: string) => def<T.ChannelPerformance>(`intel.performance:${id}`, `intelligence/channels/${id}/performance`, "NEEDS_SESSION", has("funnel", "outcomes"), { permission: "strategies:read", dependency: S3 }),
+  matches: (id: string) => def<T.HistoricalMatches>(`intel.matches:${id}`, `intelligence/claims/${id}/historical-matches`, "NEEDS_SESSION", has("claimId", "state"), { permission: "signals:read", dependency: S3, partialReason: (d) => (d.state === "SUFFICIENT" ? null : d.reason ?? "Not enough comparable history to draw a conclusion.") }),
+  performance: (id: string) => def<T.ChannelPerformance>(`intel.performance:${id}`, `intelligence/channels/${id}/performance`, "NEEDS_SESSION", has("funnel", "outcomes"), { permission: "strategies:read", dependency: S3, partialReason: (d) => (d.outcomes.status === "NOT_AVAILABLE" ? "Outcome-based performance and reliability are not available; only what was claimed and what the pipeline did with it is shown." : null) }),
   playbook: (id: string) => def<T.IntelPlaybookDetail>(`intel.playbook:${id}`, `intelligence/playbooks/${id}`, "NEEDS_SESSION", has("playbook", "versions"), { permission: "strategies:read", dependency: S3 }),
 };
