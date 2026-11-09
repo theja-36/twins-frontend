@@ -22,3 +22,14 @@ Skip link; landmarks; aria-current nav; tabs with arrow keys; focus-trapped dial
 Classic pages and Studio prototype replaced (routes redirected in `next.config.mjs`); reused `src/lib/*` helpers and the proxy unchanged.
 
 Next: Stage 10 External Integrations.
+
+## Update 2026-11-09: web login and sessions (G-42, owner-approved) and Stage 03 reads
+**Supersedes** the statements above that "login is inert", "no write calls" and "NEEDS_SESSION always shows denied".
+- **No parallel authentication.** The web app relays to the backend's existing account API: `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` (routes `src/app/api/auth/{login,logout,me}`). The opaque backend session token is kept only in an `HttpOnly`, `SameSite=Strict` cookie (`Secure` over HTTPS) whose lifetime is the backend's expiry; page script and the login response never contain it.
+- **CSRF:** login and logout need a same-origin request AND a matching double-submit token (`twins_csrf` cookie = `x-twins-csrf` header). `/api/auth/me` issues the token.
+- **Reads:** `/api/session/*` is a GET-only, allow-listed relay of the Stage 03 intelligence reads under the user's own cookie token (the shared service key is never used; a client-supplied Authorization header is ignored). A backend 401 (expired or revoked) clears the cookie and the page falls back to "sign in".
+- **Isolation:** all session-scoped answers are dropped whenever the signed-in user changes (login, logout, session end); responses are `no-store`. Sign out revokes the session at the backend.
+- **UI:** working `/login` (accessible, keyboard operable, `next` limited to same-site paths); header shows the user and Sign out in live mode; denied screens link to sign in. The demo build has no accounts.
+- **Only write paths:** the login and logout relays, to `/auth/login` and `/auth/logout` (pinned by `tests/routes.test.ts`). Still no approve, execute or live control.
+- **Evidence (local; CI pending for the introducing commit):** 79 unit tests (`tests/session.test.ts` for token, cookie, CSRF and allow-list rules); 50 Playwright tests in three projects (demo 21, live 16, session 13); the session project runs against a TEST-ONLY stand-in for the backend's account routes (`e2e/stubBackend.mjs`), covering cookie flags, token never in page/storage, CSRF refusal, logout with backend revocation, revoked and expired sessions, two users on one browser, two browsers at once, relay limits and sign-in page accessibility.
+- **Not proven:** an end-to-end run against the real backend (the backend's own session rules are proven by its Stage 01 PostgreSQL integration tests); production HTTPS cookie behaviour (set `Secure` via HTTPS or `x-forwarded-proto`); password-reset and registration screens (not requested); real-user data was never used.

@@ -40,16 +40,26 @@ describe("redirects from the old routes", () => {
 
 describe("safety rules the UI must keep", () => {
   const app = src.filter((f) => f.startsWith(join("src", "app")) || f.startsWith(join("src", "ds")));
-  it("contains no write call to the backend", () => { for (const f of app) expect(readFileSync(f, "utf8"), f).not.toMatch(/method:\s*["'](POST|PUT|PATCH|DELETE)/i); });
+  // The ONLY write calls are the two account relays (G-42): login and logout, to the backend's existing /auth/login and /auth/logout. Everything else in the app is GET.
+  const AUTH_RELAYS = [join("src", "app", "api", "auth", "login", "route.ts"), join("src", "app", "api", "auth", "logout", "route.ts")];
+  it("contains no write call to the backend except the login and logout relays", () => {
+    for (const f of app.filter((x) => !AUTH_RELAYS.includes(x))) expect(readFileSync(f, "utf8"), f).not.toMatch(/method:\s*["'](POST|PUT|PATCH|DELETE)/i);
+    expect(readFileSync(AUTH_RELAYS[0]!, "utf8")).toMatch(/\/auth\/login/); expect(readFileSync(AUTH_RELAYS[1]!, "utf8")).toMatch(/\/auth\/logout/);
+    for (const f of AUTH_RELAYS) expect(readFileSync(f, "utf8"), f).not.toMatch(/\/(admin|me|risk|paper|orders)\//);
+  });
   it("has no approve/execute/enable-live control: the only buttons that act are non-trading", () => {
     for (const f of app.filter((x) => x.endsWith(".tsx"))) { const c = readFileSync(f, "utf8"); expect(c, f).not.toMatch(/onClick=\{[^}]*(approve|execute|placeOrder|enableLive|goLive)/i); }
     const live = readFileSync("src/app/execution/live/page.tsx", "utf8"); expect(live).not.toMatch(/<Toggle/); expect(live).toMatch(/LIVE: DISABLED/);
   });
   it("never reads a secret and never exposes the token to the client", () => {
-    for (const f of src.filter((x) => !x.includes(join("app", "api")))) { const c = readFileSync(f, "utf8"); expect(c, f).not.toMatch(/TWINS_API_KEY|TWINS_API_URL/); expect(c, f).not.toMatch(/NEXT_PUBLIC_[A-Z_]*(KEY|TOKEN|SECRET)/); }
+    for (const f of src.filter((x) => !x.includes(join("app", "api")))) { const c = readFileSync(f, "utf8"); expect(c, f).not.toMatch(f === join("src", "lib", "session", "server.ts") ? /TWINS_API_KEY/ : /TWINS_API_KEY|TWINS_API_URL/); expect(c, f).not.toMatch(/NEXT_PUBLIC_[A-Z_]*(KEY|TOKEN|SECRET)/); }
     expect(readFileSync("src/app/settings/broker/page.tsx", "utf8")).not.toMatch(/<input/);
   });
-  it("the login page is inert", () => { const c = readFileSync("src/app/login/page.tsx", "utf8"); expect(c).toMatch(/preventDefault/); expect((c.match(/<input[^>]*disabled/g) ?? []).length).toBe(2); expect(c).not.toMatch(/fetch\(/); });
+  it("the login page talks only to this app's own account routes through the session client, and forgets the password after each attempt", () => {
+    const c = readFileSync("src/app/login/page.tsx", "utf8"); expect(c).toMatch(/preventDefault/); expect(c).not.toMatch(/fetch\(/); expect(c).toMatch(/setPassword\(""\)/); expect(c).toMatch(/autoComplete="current-password"/);
+    const s = readFileSync("src/api/session.ts", "utf8"); for (const m of s.matchAll(/fetch\("([^"]+)"/g)) expect(m[1], "session client fetch target").toMatch(/^\/api\/auth\/(me|login|logout)$/);
+    expect(s).not.toMatch(/localStorage|sessionStorage|document\.cookie\s*=/); // the token is never stored by page script
+  });
   it("outcome and workflow badges are separate components, and money is formatted from strings", () => {
     const p = readFileSync("src/ds/primitives.tsx", "utf8"); expect(p).toMatch(/export const DecisionBadge/); expect(p).toMatch(/export const WorkflowBadge/); expect(p).toMatch(/export const RiskBadge/);
     for (const f of app.filter((x) => x.endsWith(".tsx"))) expect(readFileSync(f, "utf8"), f).not.toMatch(/parseFloat\(|Number\([^)]*(price|pnl|lots|quantity|entry|stop)/i);

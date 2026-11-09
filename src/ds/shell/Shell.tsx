@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu, Moon, Search, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DEMO } from "@/api/query";
+import { logout, useSession } from "@/api/session";
 import { Badge, ProvenanceBadge } from "../primitives";
 import { DemoBanner } from "../states";
 import { Drawer } from "../overlay";
@@ -43,6 +44,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <Badge tone="info" title="All execution in this app is simulated paper trading. Live execution is disabled.">PAPER</Badge>
             {DEMO && <ProvenanceBadge kind="DEMO" />}
             <button type="button" onClick={() => setCmd(true)} className="flex items-center gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5 text-sm text-fg-muted hover:text-fg"><Search className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">Search</span><span className="sr-only sm:hidden">Search screens</span><kbd aria-hidden className="num hidden rounded border border-line px-1 text-[10px] sm:inline">⌘K</kbd></button>
+            {!DEMO && <Account />}
             <button type="button" aria-label={light ? "Switch to dark theme" : "Switch to light theme"} onClick={toggle} className="rounded-md p-2 text-fg-muted hover:bg-surface-2">{light ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>
           </div>
         </header>
@@ -51,4 +53,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <CommandPalette open={cmd} onClose={() => setCmd(false)} />
     </div>
   );
+}
+
+/** Live mode only: who is signed in, with sign out; or a sign-in link. (The demo build has no accounts.) */
+function Account() {
+  const s = useSession();
+  if (s.status === "authenticated") return <span className="flex items-center gap-2 text-sm text-fg-muted"><span className="hidden max-w-[10rem] truncate sm:inline" title={String(s.user.email ?? "")}>{String(s.user.email ?? "Signed in")}</span><button type="button" onClick={() => { void logout().then(() => { window.location.assign("/login"); }); }} className="rounded-md border border-line px-2.5 py-1.5 hover:text-fg">Sign out</button></span>;
+  if (s.status === "anonymous") return <Link href="/login" className="rounded-md border border-line px-2.5 py-1.5 text-sm text-fg-muted hover:text-fg">Sign in</Link>;
+  return null;
 }
